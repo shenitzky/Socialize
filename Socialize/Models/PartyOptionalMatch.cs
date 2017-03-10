@@ -5,6 +5,10 @@ using System.Web;
 
 namespace Socialize.Models
 {
+    /*
+     * Class object that contain information about optional match 
+     * that found between party different match requests
+     */
     public class PartyOptionalMatch: IOptionalMatch
     {
         public DateTime Created { get; set; }
