@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Socialize.Logic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -22,13 +23,25 @@ namespace Socialize.Models
         public MatchReqDetails MatchReqDetails { get; set; }
         // True if found optional match - Match request suspended, False otherwise
         public bool WaitForOptionalMatchRes { get; set; }
+
+        public MatchRequest()
+        {
+            this.Id = SocializeUtil.GenerateMatchReqId();
+            this.WaitForOptionalMatchRes = false;
+            this.Created = DateTime.Now;
+
+            //default one on one match request - BETA
+            this.MatchType = MatchType.ONE_TO_ONE;
+        }
     }
+
+
 
     public class MatchReqDetails
     {
         // List of factors that selected to be compared
         public List<Factor> MatchFactors { get; set; }
         // Location of the User who create the request
-        public Location location { get; set; }
+        public Location Location { get; set; }
     }
 }

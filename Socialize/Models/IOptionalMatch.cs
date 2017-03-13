@@ -23,6 +23,6 @@ namespace Socialize.Models
         // The Id of each match request that take part in the optional match suggestion
         List<int> MatchRequestIds { get; set; }
         // The factors that calculated in the optional match
-        MatchReqDetails[] MatchedUsersDetails { get; set; }
+        List<string> MatchedFactors { get; set; }
     }
 }

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Socialize.Models.PostRequestObjects;
 using Socialize.Models.GetResponseObjects;
+using Socialize.Logic;
+using Socialize.FakeData;
 
 namespace Socialize.Controllers
 {
@@ -19,81 +21,113 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task UpdateMatcReq(MatchReqUpdateObj matchReqUpdate)
         {
+            if (FakeDataUtil.Fake)
+                return;
+
+            throw new NotImplementedException();
 
         }
 
         //Create new match request by id
         [HttpPost]
-        public async Task CreateMatcReq(MatchRequestObj newMatchReq)
+        public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
+            if (FakeDataUtil.Fake)
+                return 1;
             using (var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
-                var users = db.Users.Where(user => user.Id == userId).ToArray();
-                int x = 90;
+
+                var matchReq = new MatchRequest();
+                matchReq.MatchReqDetails = newMatchReq;
+                matchReq.MatchOwner = userId;
+
+                var matchManager = MatchManager.GetManagerInstance();
+                matchManager.CreateMatchRequest(matchReq);
+
+                return matchReq.Id;
             }
         }
 
         //Check if found optional match for match request by id
         [HttpGet]
-        public async Task<IOptionalMatch> CheckMatcReqStatus(int matchReqId)
+        public async Task<OptinalMatchObj> CheckMatcReqStatus(int matchReqId)
         {
-            var optionalMatch = new OneOnOneOptionalMatch()
-            {
-                Id = 001,
-                Created = DateTime.Now,
-                MatchedUsersDetails = new MatchReqDetails[] { new MatchReqDetails(), new MatchReqDetails() },
-                MatchRequestIds = new List<int> { 1, 2 },
-                MatchStrength = new List<int> { 80, 90 },
-                Status = new Dictionary<int, bool> { { 1, true }, { 2, true } }
-            };
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.CreateFakeOptionalMatch();
 
-            return optionalMatch;
+            throw new NotImplementedException();
         }
 
         //Check optional match status - if confirmed by all other participants
         [HttpGet]
-        public async Task<ApplicationUser> CheckOptionalMatchStatus(int optionalMatchId)
+        public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId)
         {
-            return null;
-            
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.CreateFakeFinalMatch();
+
+            throw new NotImplementedException();
+
         }
 
         //Confirm optional match suggestion
         [HttpPost]
-        public async Task AcceptOptionalMatch(int optionalMatchId)
+        public async Task AcceptOptionalMatch(EntityIdObj id)
         {
+            if (FakeDataUtil.Fake)
+                return;
 
+            throw new NotImplementedException();
         }
 
         //Decline optional match suggestion
         [HttpPost]
-        public async Task DeclineOptionalMatch(int optionalMatchId)
+        public async Task DeclineOptionalMatch(EntityIdObj id)
         {
+            if (FakeDataUtil.Fake)
+                return;
 
+            throw new NotImplementedException();
         }
 
         //Update user detail by user id
         [HttpPost]
         public async Task UpdateUserData(UpdateUserObj updateUserData)
         {
-
+            throw new NotImplementedException();
         }
 
         //Get user detail by user id
         [HttpGet]
-        public async Task<UserDataObj> GetUserData(string userId)
+        public async Task<UserDataObj> GetUserData()
         {
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.CreateFakeUserData();
 
-            return null;
+            throw new NotImplementedException();
         }
 
         //Get all the available factors for user registration
         [HttpGet]
-        public async Task<Factor[]> GetAllSystemFactors()
+        public async Task<FactorObj[]> GetAllSystemFactors()
         {
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.CreateFakeFactors();
 
-            return null;
+            throw new NotImplementedException();
         }
+
+        //[HttpGet]
+        //public async Task<MatchReqDetails> Test()
+        //{
+        //    var details = new MatchReqDetails()
+        //    {
+        //        location = new Location() { lat = 0.1, lng = 0.2 },
+        //        MatchFactors = new List<Factor>() { new Factor() { Class = "dd" } }
+        //    };
+
+        //    return details;
+        //}
+
     }
 }
