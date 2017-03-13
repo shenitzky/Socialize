@@ -53,9 +53,10 @@ namespace Socialize.Controllers
 
         //Check optional match status - if confirmed by all other participants
         [HttpGet]
-        public async Task<FinalMatch> CheckOptionalMatchStatus(int optionalMatchId)
+        public async Task<ApplicationUser> CheckOptionalMatchStatus(int optionalMatchId)
         {
             return null;
+            
         }
 
         //Confirm optional match suggestion

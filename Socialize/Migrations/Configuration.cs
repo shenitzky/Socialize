@@ -10,7 +10,6 @@ namespace Socialize.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
-            ContextKey = "Socialize.Models.ApplicationDbContext";
         }
 
         protected override void Seed(Socialize.Models.ApplicationDbContext context)
