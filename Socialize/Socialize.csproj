@@ -212,12 +212,23 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\SocializeApiController.cs" />
+    <Compile Include="Exeptions\MissingMatchRequestIdException.cs" />
+    <Compile Include="Exeptions\SocializeExeption.cs" />
+    <Compile Include="FakeData\FakeDataUtil.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Logic\MatchManager.cs" />
+    <Compile Include="Logic\MatchReqContainer.cs" />
+    <Compile Include="Logic\OptionalMatchBuilder.cs" />
+    <Compile Include="Logic\OptionalMatchContainer.cs" />
+    <Compile Include="Logic\SocializeUtil.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AvatarImg.cs" />
+    <Compile Include="Models\GetResponseObjects\FactorObj.cs" />
+    <Compile Include="Models\GetResponseObjects\FinalMatchObj.cs" />
+    <Compile Include="Models\GetResponseObjects\OptinalMatchObj.cs" />
     <Compile Include="Models\MatchType.cs" />
     <Compile Include="Models\Factor.cs" />
     <Compile Include="Models\FinalMatch.cs" />
@@ -229,6 +240,7 @@
     <Compile Include="Models\MatchRequest.cs" />
     <Compile Include="Models\OneOnOneOptionalMatch.cs" />
     <Compile Include="Models\PartyOptionalMatch.cs" />
+    <Compile Include="Models\PostRequestObjects\EntityIdObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchRequestObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchReqUpdateObj.cs" />
     <Compile Include="Models\PostRequestObjects\UpdateUserObj.cs" />
@@ -324,7 +336,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50825</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
