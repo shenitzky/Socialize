@@ -11,10 +11,10 @@ using Socialize.Models.PostRequestObjects;
 using Socialize.Models.GetResponseObjects;
 using Socialize.Logic;
 using Socialize.FakeData;
+using System.Web.Http.Cors;
 
 namespace Socialize.Controllers
 {
-    
     public class SocializeApiController : ApiController
     {
         //Update specific match request by id with new location 
