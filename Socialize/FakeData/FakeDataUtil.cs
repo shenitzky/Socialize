@@ -9,7 +9,7 @@ namespace Socialize.FakeData
 {
     public class FakeDataUtil
     {
-        public static bool Fake = true;
+        public static bool Fake = false;
         public static UserDataObj CreateFakeUserData()
         {
             return new UserDataObj()
@@ -45,7 +45,19 @@ namespace Socialize.FakeData
             {
                 Created = DateTime.Now,
                 Id = 22,
-                MatchedFactors = new List<string>() { "Soccer", "Gamming" },
+                MatchedFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "XXX",
+                       SubClasses = new List<string>() { "YYYY" }
+                   },
+                   new Factor()
+                   {
+                       Class = "ZZZZ",
+                       SubClasses = new List<string>() { "TTTTT" }
+                   }
+               },
                 MatchRequestId = 121,
                 MatchStrength = 88,
             };

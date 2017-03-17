@@ -19,10 +19,10 @@ namespace Socialize.Models
         // for each match request id (int) define if the optional match accepted or declined (bool)
         Dictionary<int, bool> Status { get; set; }
         // The strength of the optional match for each participant
-        List<int> MatchStrength { get; set; }
+        Dictionary<int, int> MatchStrength { get; set; }
         // The Id of each match request that take part in the optional match suggestion
         List<int> MatchRequestIds { get; set; }
         // The factors that calculated in the optional match
-        List<string> MatchedFactors { get; set; }
+        List<Factor> MatchedFactors { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace Socialize.Models.GetResponseObjects
     {
         public DateTime Created { get; set; }
         public int Id { get; set; }
-        public List<string> MatchedFactors { get; set; }
+        public List<Factor> MatchedFactors { get; set; }
         public int MatchRequestId { get; set; }
         public int MatchStrength { get; set; }
     }

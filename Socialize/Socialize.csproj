@@ -44,6 +44,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=1.2.0.1011, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.1.2.0\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
       <Private>True</Private>
@@ -220,12 +224,14 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\SocializeApiController.cs" />
+    <Compile Include="Exeptions\MissingOptionalMatchException.cs" />
     <Compile Include="Exeptions\MissingMatchRequestIdException.cs" />
     <Compile Include="Exeptions\SocializeExeption.cs" />
     <Compile Include="FakeData\FakeDataUtil.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Logic\Extensions.cs" />
     <Compile Include="Logic\MatchManager.cs" />
     <Compile Include="Logic\MatchReqContainer.cs" />
     <Compile Include="Logic\OptionalMatchBuilder.cs" />

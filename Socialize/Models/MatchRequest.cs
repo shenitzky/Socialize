@@ -26,7 +26,7 @@ namespace Socialize.Models
 
         public MatchRequest()
         {
-            this.Id = SocializeUtil.GenerateMatchReqId();
+            this.Id = SocializeUtil.GeneratId();
             this.WaitForOptionalMatchRes = false;
             this.Created = DateTime.Now;
 

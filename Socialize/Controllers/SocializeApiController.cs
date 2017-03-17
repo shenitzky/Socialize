@@ -12,27 +12,24 @@ using Socialize.Models.GetResponseObjects;
 using Socialize.Logic;
 using Socialize.FakeData;
 using System.Web.Http.Cors;
+using log4net;
+using Newtonsoft.Json;
 
 namespace Socialize.Controllers
 {
     public class SocializeApiController : ApiController
     {
-        //Update specific match request by id with new location 
-        [HttpPost]
-        public async Task UpdateMatcReq(MatchReqUpdateObj matchReqUpdate)
-        {
-            if (FakeDataUtil.Fake)
-                return;
-
-            throw new NotImplementedException();
-
-        }
+        //add logger
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         //Create new match request by id
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
+            var parseObj = JsonConvert.SerializeObject(newMatchReq);
+            Log.Debug($"POST CreateMatcReq calld with match details {parseObj}");
             if (FakeDataUtil.Fake)
+
                 return 1;
             using (var db = ApplicationDbContext.Create())
             {
@@ -49,31 +46,37 @@ namespace Socialize.Controllers
             }
         }
 
-        //Check if found optional match for match request by id
+        //Check if found optional match for match request by id (loop)
         [HttpGet]
         public async Task<OptinalMatchObj> CheckMatcReqStatus(int matchReqId)
         {
+            Log.Debug($"GET CheckMatcReqStatus calld with id {matchReqId}");
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeOptionalMatch();
 
-            throw new NotImplementedException();
+            var matchManager = MatchManager.GetManagerInstance();
+            var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqId);
+            return optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqId) : null;
         }
 
-        //Check optional match status - if confirmed by all other participants
-        [HttpGet]
-        public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId)
+        //Update specific match request by id with new location 
+        [HttpPost]
+        public async Task UpdateMatcReq(MatchReqUpdateObj matchReqUpdate)
         {
+            var parseObj = JsonConvert.SerializeObject(matchReqUpdate);
+            Log.Debug($"POST UpdateMatcReq calld with updates {parseObj}");
             if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeFinalMatch();
-
-            throw new NotImplementedException();
-
+                return;
+            var manager = MatchManager.GetManagerInstance();
+            manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
         }
 
         //Confirm optional match suggestion
         [HttpPost]
         public async Task AcceptOptionalMatch(EntityIdObj id)
         {
+            var parseObj = JsonConvert.SerializeObject(id);
+            Log.Debug($"POST AcceptOptionalMatch calld with id object {parseObj}");
             if (FakeDataUtil.Fake)
                 return;
 
@@ -84,8 +87,21 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task DeclineOptionalMatch(EntityIdObj id)
         {
+            var parseObj = JsonConvert.SerializeObject(id);
+            Log.Debug($"POST DeclineOptionalMatch calld with id object {parseObj}");
             if (FakeDataUtil.Fake)
                 return;
+
+            throw new NotImplementedException();
+        }
+
+        //Check optional match status - if confirmed by all other participants (loop)
+        [HttpGet]
+        public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId)
+        {
+            Log.Debug($"GET CheckOptionalMatchStatus calld with id {optionalMatchId}");
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.CreateFakeFinalMatch();
 
             throw new NotImplementedException();
         }
@@ -94,6 +110,8 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task UpdateUserData(UpdateUserObj updateUserData)
         {
+            var parseObj = JsonConvert.SerializeObject(updateUserData);
+            Log.Debug($"POST UpdateUserData calld with user object {parseObj}");
             throw new NotImplementedException();
         }
 
@@ -101,6 +119,7 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<UserDataObj> GetUserData()
         {
+            Log.Debug($"GET GetUserData calld");
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeUserData();
 
@@ -111,23 +130,67 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<FactorObj[]> GetAllSystemFactors()
         {
+            Log.Debug($"GET GetAllSystemFactors calld");
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeFactors();
 
             throw new NotImplementedException();
         }
 
-        //[HttpGet]
-        //public async Task<MatchReqDetails> Test()
-        //{
-        //    var details = new MatchReqDetails()
-        //    {
-        //        location = new Location() { lat = 0.1, lng = 0.2 },
-        //        MatchFactors = new List<Factor>() { new Factor() { Class = "dd" } }
-        //    };
+        [HttpGet]
+        public async Task<List<int>> Test()
+        {
+            var firstReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "XXX",
+                       SubClasses = new List<string>() { "YYYY" }
+                   },
+                   new Factor()
+                   {
+                       Class = "ZZZZ",
+                       SubClasses = new List<string>() { "TTTTT" }
+                   }
+               }
+            };
+            var secReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "XXX",
+                       SubClasses = new List<string>() { "YYYY" }
+                   },
+                   new Factor()
+                   {
+                       Class = "ZZZZ",
+                       SubClasses = new List<string>() { "TTTTT" }
+                   }
+               }
+            };
 
-        //    return details;
-        //}
+            var firstId = await CreateMatcReq(firstReq);
+            var secId = await CreateMatcReq(secReq);
+
+            return new List<int>() { firstId, secId };
+        }
+
+
+        [HttpGet]
+        public async Task Test2(int first, int sec)
+        {
+            var manager = MatchManager.GetManagerInstance();
+            var result = new Dictionary<int, int>() { { first, 88 }, { sec, 92 } };
+            manager.OptionalMatchFound(result);
+
+        }
+
 
     }
 }

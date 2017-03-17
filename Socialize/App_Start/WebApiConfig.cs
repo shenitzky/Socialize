@@ -17,9 +17,12 @@ namespace Socialize.App_Start
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-            //Allow 
+            //Allow access to all domains
             var cors = new EnableCorsAttribute("*", "*", "*");
             config.EnableCors(cors);
+
+            //Add logger
+            log4net.Config.XmlConfigurator.Configure();
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
