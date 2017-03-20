@@ -72,5 +72,25 @@ namespace Socialize.Logic
             OptionalMatchContainer.AddOptionalMatch(optionalMatch);
         }
 
+        //Accept (status = true ) or decline (status = false) optional match offer
+        public void AcceptOrDeclineOptionalMatch(int optionalMatchId, int matchReqId, bool status)
+        {
+            var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
+
+            //Check if optional match exists (can be removed if first user declined it)
+            if(optionalMatch != null)
+            {
+                //Check the status, if  
+                if (status)
+                {
+                    optionalMatch.Status[matchReqId] = true;
+                }
+                else
+                {
+                    OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
+                }
+            }
+        }
+
     }
 }

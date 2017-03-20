@@ -65,7 +65,6 @@ namespace Socialize.Logic
         //Get optional match by optional match id
         public IOptionalMatch GetOptionalMatchByOptionalMatchId(int optionalMatchId)
         {
-            // TODO - maybe not nedded
             return OptionalMatches.ContainsKey(optionalMatchId) ? OptionalMatches[optionalMatchId] : null;
         }
 

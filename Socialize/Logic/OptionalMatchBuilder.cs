@@ -25,7 +25,9 @@ namespace Socialize.Logic
                 MatchRequestIds = ids,
                 MatchStrength = algResult,
                 //Set both match req ids status to false by default
-                Status = new Dictionary<int, bool>() { { first.Id, false}, { sec.Id, false} }
+                Status = new Dictionary<int, bool>() {
+                    { first.Id, false }, { sec.Id, false}
+                }
             };
         }
     }

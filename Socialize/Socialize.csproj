@@ -257,6 +257,7 @@
     <Compile Include="Models\PostRequestObjects\EntityIdObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchRequestObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchReqUpdateObj.cs" />
+    <Compile Include="Models\PostRequestObjects\OptionalMatchIdAndMatchReqIdObj.cs" />
     <Compile Include="Models\PostRequestObjects\UpdateUserObj.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />

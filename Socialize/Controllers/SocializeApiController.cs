@@ -73,26 +73,28 @@ namespace Socialize.Controllers
 
         //Confirm optional match suggestion
         [HttpPost]
-        public async Task AcceptOptionalMatch(EntityIdObj id)
+        public async Task AcceptOptionalMatch(OptionalMatchIdAndMatchReqIdObj ids)
         {
-            var parseObj = JsonConvert.SerializeObject(id);
-            Log.Debug($"POST AcceptOptionalMatch calld with id object {parseObj}");
+            var parseObj = JsonConvert.SerializeObject(ids);
+            Log.Debug($"POST AcceptOptionalMatch calld with OptionalMatchIdAndMatchReqIdObj object {parseObj}");
             if (FakeDataUtil.Fake)
                 return;
 
-            throw new NotImplementedException();
+            var manager = MatchManager.GetManagerInstance();
+            manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, true);
         }
 
         //Decline optional match suggestion
         [HttpPost]
-        public async Task DeclineOptionalMatch(EntityIdObj id)
+        public async Task DeclineOptionalMatch(OptionalMatchIdAndMatchReqIdObj ids)
         {
-            var parseObj = JsonConvert.SerializeObject(id);
+            var parseObj = JsonConvert.SerializeObject(ids);
             Log.Debug($"POST DeclineOptionalMatch calld with id object {parseObj}");
             if (FakeDataUtil.Fake)
                 return;
 
-            throw new NotImplementedException();
+            var manager = MatchManager.GetManagerInstance();
+            manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, false);
         }
 
         //Check optional match status - if confirmed by all other participants (loop)
