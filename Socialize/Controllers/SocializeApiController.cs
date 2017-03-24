@@ -47,28 +47,40 @@ namespace Socialize.Controllers
         }
 
         //Check if found optional match for match request by id (loop)
-        [HttpGet]
-        public async Task<OptinalMatchObj> CheckMatcReqStatus(int matchReqId)
-        {
-            Log.Debug($"GET CheckMatcReqStatus calld with id {matchReqId}");
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeOptionalMatch();
+        //[HttpGet]
+        //public async Task<OptinalMatchObj> CheckMatcReqStatus(int matchReqId)
+        //{
+        //    Log.Debug($"GET CheckMatcReqStatus calld with id {matchReqId}");
+        //    if (FakeDataUtil.Fake)
+        //        return FakeDataUtil.CreateFakeOptionalMatch();
 
-            var matchManager = MatchManager.GetManagerInstance();
-            var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqId);
-            return optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqId) : null;
-        }
+        //    var matchManager = MatchManager.GetManagerInstance();
+        //    var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqId);
+        //    return optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqId) : null;
+        //}
 
-        //Update specific match request by id with new location 
+        //Check if found optional match for match request by id (loop) if not Update specific match request by id with new location 
         [HttpPost]
-        public async Task UpdateMatcReq(MatchReqUpdateObj matchReqUpdate)
+        public async Task<OptinalMatchObj> UpdateAndCheckMatcReq(MatchReqUpdateObj matchReqUpdate)
         {
             var parseObj = JsonConvert.SerializeObject(matchReqUpdate);
-            Log.Debug($"POST UpdateMatcReq calld with updates {parseObj}");
+            Log.Debug($"POST UpdateAndCheckMatcReq calld with updates {parseObj}");
+
             if (FakeDataUtil.Fake)
-                return;
+                return null;
+
+            var matchManager = MatchManager.GetManagerInstance();
+            var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqUpdate.matchReqId);
+            var result = optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqUpdate.matchReqId) : null;
+
+            if (result != null)
+                return result;
+
+            Log.Debug($"Optional match not found fot match req: {matchReqUpdate.matchReqId}");
             var manager = MatchManager.GetManagerInstance();
             manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
+
+            return result;
         }
 
         //Confirm optional match suggestion
@@ -114,7 +126,26 @@ namespace Socialize.Controllers
         {
             var parseObj = JsonConvert.SerializeObject(updateUserData);
             Log.Debug($"POST UpdateUserData calld with user object {parseObj}");
-            throw new NotImplementedException();
+
+            if (FakeDataUtil.Fake)
+                return;
+            using (var db = ApplicationDbContext.Create())
+            {
+                var userId = User.Identity.GetUserId();
+                var user = db.Users.FirstOrDefault(x => x.Id == userId);
+
+                if (user == null)
+                    throw new Exception($"Can not find userId- {userId}");
+
+                var newFactors = updateUserData.Data.Select(x => new Factor() { Class = x.Class, SubClasses = x.SubClasses, UserId = userId }).ToList();
+                var originalFactors = user.Factors ?? new List<Factor>();
+
+                var unionFactors = originalFactors.Union(newFactors);
+                var distinctFactors = unionFactors.DistinctBy(x => x.Class + x.SubClasses).ToList();
+
+                user.Factors = distinctFactors;
+                await db.SaveChangesAsync();
+            }
         }
 
         //Get user detail by user id
