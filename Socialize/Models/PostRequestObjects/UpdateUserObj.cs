@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Socialize.Models.GetResponseObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -11,5 +12,6 @@ namespace Socialize.Models.PostRequestObjects
 {
     public class UpdateUserObj
     {
+        public FactorObj[] Data { get; set; }
     }
 }
