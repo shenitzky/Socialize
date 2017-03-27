@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Newtonsoft.Json;
 using Socialize.Models;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ namespace Socialize.Logic
 {
     public class MatchManager
     {
+
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         //singlton implementation
         private static MatchManager ManagerInstance;
@@ -56,22 +58,6 @@ namespace Socialize.Logic
             return null;
         }
 
-        //Invoked Event function, create optional match and add to optional container, and suspends Match requests
-        public void OptionalMatchFound(Dictionary<int, int> algResult)
-        {
-            var firstId = algResult.First().Key;
-            var secId = algResult.Last().Key;
-
-            MatchReqContainer.SuspendMatchReq(firstId);
-            MatchReqContainer.SuspendMatchReq(secId);
-
-            var firstMatchReq = MatchReqContainer.GetMatchReqById(firstId);
-            var secMatchReq = MatchReqContainer.GetMatchReqById(secId);
-
-            var optionalMatch = OptionalMatchBuilder.CreateOptionalMatch(firstMatchReq, secMatchReq, algResult);
-            OptionalMatchContainer.AddOptionalMatch(optionalMatch);
-        }
-
         //Accept (status = true ) or decline (status = false) optional match offer
         public void AcceptOrDeclineOptionalMatch(int optionalMatchId, int matchReqId, bool status)
         {
@@ -80,7 +66,7 @@ namespace Socialize.Logic
             //Check if optional match exists (can be removed if first user declined it)
             if(optionalMatch != null)
             {
-                //Check the status, if  
+                //Check the status, if true, update the status else remove the optional match
                 if (status)
                 {
                     optionalMatch.Status[matchReqId] = true;
@@ -90,6 +76,25 @@ namespace Socialize.Logic
                     OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
                 }
             }
+        }
+
+        //Invoked Event function, create optional match and add to optional container, and suspends Match requests
+        public void OnOptionalMatchFound(object source, OptionalMatchEventArgs args)
+        {
+            var parseObj = JsonConvert.SerializeObject(args.results);
+            Log.Debug($"Creating optional match object with results{parseObj}");
+
+            var firstId = args.results.First().Key;
+            var secId = args.results.Last().Key;
+
+            MatchReqContainer.SuspendMatchReq(firstId);
+            MatchReqContainer.SuspendMatchReq(secId);
+
+            var firstMatchReq = MatchReqContainer.GetMatchReqById(firstId);
+            var secMatchReq = MatchReqContainer.GetMatchReqById(secId);
+
+            var optionalMatch = OptionalMatchBuilder.CreateOptionalMatch(firstMatchReq, secMatchReq, args.results);
+            OptionalMatchContainer.AddOptionalMatch(optionalMatch);
         }
 
     }

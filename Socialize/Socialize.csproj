@@ -224,6 +224,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\SocializeApiController.cs" />
+    <Compile Include="Exeptions\MatchRequestHandlerException.cs" />
     <Compile Include="Exeptions\MissingOptionalMatchException.cs" />
     <Compile Include="Exeptions\MissingMatchRequestIdException.cs" />
     <Compile Include="Exeptions\SocializeExeption.cs" />
@@ -232,8 +233,12 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Logic\Extensions.cs" />
+    <Compile Include="Logic\IMatchAlg.cs" />
+    <Compile Include="Logic\IntuitiveMatchAlg.cs" />
+    <Compile Include="Logic\MatchAlgFactory.cs" />
     <Compile Include="Logic\MatchManager.cs" />
     <Compile Include="Logic\MatchReqContainer.cs" />
+    <Compile Include="Logic\MatchReqHandler.cs" />
     <Compile Include="Logic\OptionalMatchBuilder.cs" />
     <Compile Include="Logic\OptionalMatchContainer.cs" />
     <Compile Include="Logic\SocializeUtil.cs" />

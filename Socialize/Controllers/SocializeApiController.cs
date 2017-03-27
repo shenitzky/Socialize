@@ -76,10 +76,10 @@ namespace Socialize.Controllers
             if (result != null)
                 return result;
 
-            Log.Debug($"Optional match not found fot match req: {matchReqUpdate.matchReqId}");
+            Log.Debug($"Optional match not found for match req: {matchReqUpdate.matchReqId}");
             var manager = MatchManager.GetManagerInstance();
             manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
-
+            Log.Debug($"Match request id: {matchReqUpdate.matchReqId} location updated");
             return result;
         }
 
@@ -220,10 +220,20 @@ namespace Socialize.Controllers
         {
             var manager = MatchManager.GetManagerInstance();
             var result = new Dictionary<int, int>() { { first, 88 }, { sec, 92 } };
-            manager.OptionalMatchFound(result);
+            //Do not use, change to OnOptionalMatchFound which is an event func
+            //manager.OptionalMatchFound(result);
 
         }
 
+        [HttpGet]
+        public async Task Test3()
+        {
+            MatchManager manager = MatchManager.GetManagerInstance();
+            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
+            manager.CreateMatchRequest(new MatchRequest());
+            manager.CreateMatchRequest(new MatchRequest());
+            handler.SendMatchReqToFindMatch();
+        }
 
     }
 }
