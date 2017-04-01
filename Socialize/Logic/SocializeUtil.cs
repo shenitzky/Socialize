@@ -1,12 +1,13 @@
 ﻿using Socialize.Models;
 using Socialize.Models.GetResponseObjects;
 using System;
+using System.Device.Location;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
 namespace Socialize.Logic
-{
+{   
     public class SocializeUtil
     {
         //Save the latest randomize number
@@ -14,6 +15,14 @@ namespace Socialize.Logic
         public static int GeneratId()
         {
             return Random.Next();
+        }
+
+        //Recived two different coordinates and return the distance in meters
+        public static double CalculateLocationPriximity(Location matchLocationX, Location matchLocationY)
+        {
+            var sCoord = new GeoCoordinate(matchLocationX.lat, matchLocationX.lng);
+            var eCoord = new GeoCoordinate(matchLocationY.lat, matchLocationY.lng);
+            return sCoord.GetDistanceTo(eCoord);
         }
 
         //convert from Factor to FactorObj

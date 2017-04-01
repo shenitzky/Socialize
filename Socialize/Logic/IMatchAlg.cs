@@ -17,6 +17,11 @@ namespace Socialize.Logic
          * Returns Dictionary<MatchRequestId, matchStrength> holds the strength of the match 
          * for each match request
          */
+
+        //Specify the maximum distance between two different locations
+        double MAX_DISTANCE { get; set; }
+
+
         Dictionary<int, int> CalcOptionalMatch(MatchRequest first, MatchRequest sec);
     }
 }

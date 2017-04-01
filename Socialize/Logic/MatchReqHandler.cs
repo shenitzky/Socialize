@@ -56,6 +56,8 @@ namespace Socialize.Logic
         {
             ReqContainerInstance = MatchReqContainer.GetMatchReqContainerInstance();
             MatchAlg = MatchAlgFactory.GetMatchAlg(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
+            //Set maximum distance between two locations to 25
+            MatchAlg.MAX_DISTANCE = 25;
         }
 
         //Event Raised function
@@ -101,10 +103,16 @@ namespace Socialize.Logic
                     if (!matchReq.WaitForOptionalMatchRes)
                     {
                         var res = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
-                        //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
-                        if (!(res.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+
+                        //Check if there is optional match properties
+                        if(res != null)
                         {
-                            OnOptionalMatchFound(res);
+                            //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
+                            if (!(res.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+                            {
+                                OnOptionalMatchFound(res);
+                                return;
+                            }
                         }
                     }
                 }

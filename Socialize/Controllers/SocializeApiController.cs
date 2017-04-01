@@ -235,5 +235,79 @@ namespace Socialize.Controllers
             handler.SendMatchReqToFindMatch();
         }
 
+        [HttpGet]
+        public async Task Test4()
+        {
+            MatchManager manager = MatchManager.GetManagerInstance();
+            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
+
+
+            var firstReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "sport",
+                       SubClasses = new List<string>() { "soccer", "basketball" }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<string>() { "ps4" }
+                   }
+               }
+            };
+            var secReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "sport",
+                       SubClasses = new List<string>() { "soccer" }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<string>() { "ps4" }
+                   }
+               }
+            };
+
+            var thirdReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "work",
+                       SubClasses = new List<string>() { "programmer" }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<string>() { "xbox" }
+                   }
+               }
+            };
+
+            var first = new MatchRequest();
+            first.MatchReqDetails = firstReq;
+            var sec = new MatchRequest();
+            sec.MatchReqDetails = secReq;
+            var third = new MatchRequest();
+            third.MatchReqDetails = thirdReq;
+
+            manager.CreateMatchRequest(first);
+            manager.CreateMatchRequest(third);
+            manager.CreateMatchRequest(sec);
+
+            handler.SendMatchReqToFindMatch();
+        }
+
     }
 }
