@@ -70,13 +70,16 @@ namespace Socialize.Logic
                 //calculate the second match req strength
                 var FactorSubClasses = FactorClassFound.SubClasses.ToArray();
                 secSum += FactorSubClasses.Length * 0.5;
-                firstSum += 0.5;
+                
 
                 foreach (var subclass in factor.SubClasses)
                 {
+                    //Add 0.5 for the first match req strength for class match only
+                    firstSum += 0.5;
                     var subclassFound = FactorSubClasses.Where(x => x.Equals(subclass)).FirstOrDefault();
                     if(subclassFound != null)
                     {
+                        //Add more 0.5 score if perfect sub-class match
                         firstSum += 0.5;
                         secSum += 0.5;
                     }

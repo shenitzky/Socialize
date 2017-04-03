@@ -256,6 +256,11 @@ namespace Socialize.Controllers
                    {
                        Class = "gamming",
                        SubClasses = new List<string>() { "ps4" }
+                   },
+                   new Factor()
+                   {
+                       Class = "work",
+                       SubClasses = new List<string>() { "eng" }
                    }
                }
             };
@@ -266,13 +271,8 @@ namespace Socialize.Controllers
                {
                    new Factor()
                    {
-                       Class = "sport",
-                       SubClasses = new List<string>() { "soccer" }
-                   },
-                   new Factor()
-                   {
                        Class = "gamming",
-                       SubClasses = new List<string>() { "ps4" }
+                       SubClasses = new List<string>() { "ps4","xbox","gameboy" }
                    }
                }
             };
@@ -284,12 +284,25 @@ namespace Socialize.Controllers
                {
                    new Factor()
                    {
-                       Class = "work",
-                       SubClasses = new List<string>() { "programmer" }
+                       Class = "sport",
+                       SubClasses = new List<string>() { "tennis" }
                    },
                    new Factor()
                    {
                        Class = "gamming",
+                       SubClasses = new List<string>() { "xbox" }
+                   }
+               }
+            };
+
+            var fourthReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "work",
                        SubClasses = new List<string>() { "xbox" }
                    }
                }
@@ -301,10 +314,14 @@ namespace Socialize.Controllers
             sec.MatchReqDetails = secReq;
             var third = new MatchRequest();
             third.MatchReqDetails = thirdReq;
+            var fourth = new MatchRequest();
+            fourth.MatchReqDetails = fourthReq;
 
             manager.CreateMatchRequest(first);
             manager.CreateMatchRequest(third);
             manager.CreateMatchRequest(sec);
+            manager.CreateMatchRequest(fourth);
+
 
             handler.SendMatchReqToFindMatch();
         }
