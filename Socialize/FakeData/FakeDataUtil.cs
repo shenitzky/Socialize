@@ -9,7 +9,7 @@ namespace Socialize.FakeData
 {
     public class FakeDataUtil
     {
-        public static bool Fake = true;
+        public static bool Fake = false;
         public static UserDataObj CreateFakeUserData()
         {
             using(var db = ApplicationDbContext.Create())

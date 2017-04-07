@@ -79,6 +79,8 @@ namespace Socialize.Logic
         public void SendMatchReqToFindMatch()
         {
             var nextMatchReq = ReqContainerInstance.GetNextMatchRequest();
+            if (nextMatchReq == null) return;
+
             var allOtherMatchReq = ReqContainerInstance.GetAllOtherRequests(nextMatchReq.Id);
 
             //Verify the queue holds more than two match requests
@@ -88,21 +90,26 @@ namespace Socialize.Logic
                 return;
             }
 
-            //TODO - BETA implement this loop in more efficient way
-            foreach (var matchReq in allOtherMatchReq)
+            //Verify match request is not suspended
+            if (!nextMatchReq.WaitForOptionalMatchRes)
             {
-                //Verify other match request not suspended
-                if (!matchReq.WaitForOptionalMatchRes)
+                //TODO - BETA implement this loop in more efficient way
+                foreach (var matchReq in allOtherMatchReq)
                 {
-                    var algResult = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
-
-                    //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
-                    if (!(algResult.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+                    //Verify other match request not suspended
+                    if (!matchReq.WaitForOptionalMatchRes)
                     {
-                        OnOptionalMatchFound(algResult);
-                        return;
+                        var algResult = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
+
+                        //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
+                        if (!(algResult.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+                        {
+                            OnOptionalMatchFound(algResult);
+                            return;
+                        }
                     }
                 }
+                ReqContainerInstance.RestoreMatchReq(nextMatchReq.Id);
             }
         }
     }

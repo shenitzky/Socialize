@@ -10,6 +10,7 @@ namespace Socialize
         {
             
             ConfigureAuth(app);
+
         }
     }
 }

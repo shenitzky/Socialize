@@ -48,19 +48,6 @@ namespace Socialize.Controllers
             }
         }
 
-        //Check if found optional match for match request by id (loop)
-        //[HttpGet]
-        //public async Task<OptinalMatchObj> CheckMatcReqStatus(int matchReqId)
-        //{
-        //    Log.Debug($"GET CheckMatcReqStatus calld with id {matchReqId}");
-        //    if (FakeDataUtil.Fake)
-        //        return FakeDataUtil.CreateFakeOptionalMatch();
-
-        //    var matchManager = MatchManager.GetManagerInstance();
-        //    var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqId);
-        //    return optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqId) : null;
-        //}
-
         //Check if found optional match for match request by id (loop) if not Update specific match request by id with new location 
         [HttpPost]
         public async Task<OptinalMatchObj> UpdateAndCheckMatcReq(MatchReqUpdateObj matchReqUpdate)
@@ -178,6 +165,7 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<List<int>> Test()
         {
+
             return null;
             //var firstReq = new MatchReqDetails()
             //{
@@ -254,96 +242,174 @@ namespace Socialize.Controllers
             }            
         }
 
-        //[HttpGet]
-        //public async Task Test4()
-        //{
-        //    MatchManager manager = MatchManager.GetManagerInstance();
-        //    MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
+        [HttpGet]
+        public async Task Test4()
+        {
+            MatchManager manager = MatchManager.GetManagerInstance();
+            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
 
+            //new Factor[]
+            //    {
+            //        new Factor()
+            //            {
+            //                Class = "Sport" ,
+            //                SubClasses = new List<SubClass>()
+            //                {
+            //                    new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Tennis3", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Tennis1", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Tennis2", ImgUrl = imgUrl }
+            //                }
+            //            },
+            //        new Factor()
+            //            {
+            //                Class = "Work" ,
+            //                SubClasses = new List<SubClass>()
+            //                {
+            //                    new SubClass() { Name = "Prog", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Eng1", ImgUrl = imgUrl},
+            //                    new SubClass() { Name = "Eng2", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Eng3", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Eng4", ImgUrl = imgUrl }
+            //                }
+            //            },
+            //        new Factor()
+            //            {
+            //                Class = "Hobbies" ,
+            //                SubClasses = new List<SubClass>()
+            //                {
+            //                    new SubClass() { Name = "Baking", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Fishing", ImgUrl = imgUrl},
+            //                    new SubClass() { Name = "Cleaning", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Fishing", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Fishing5", ImgUrl = imgUrl }
+            //                }
+            //            },
+            //        new Factor()
+            //            {
+            //                Class = "Gamming" ,
+            //                SubClasses = new List<SubClass>()
+            //                {
+            //                    new SubClass() { Name = "PS4", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "XBOX", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "GameBoy", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "Tetris", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "PS3", ImgUrl = imgUrl },
+            //                    new SubClass() { Name = "PS2", ImgUrl = imgUrl }
+            //                }
+            //            }
+            //    };
 
-        //    var firstReq = new MatchReqDetails()
-        //    {
-        //        Location = new Location() { lat = 1.1, lng = 0.1 },
-        //        MatchFactors = new List<Factor>()
-        //       {
-        //           new Factor()
-        //           {
-        //               Class = "sport",
-        //               SubClasses = new List<string>() { "soccer", "basketball" }
-        //           },
-        //           new Factor()
-        //           {
-        //               Class = "gamming",
-        //               SubClasses = new List<string>() { "ps4" }
-        //           },
-        //           new Factor()
-        //           {
-        //               Class = "work",
-        //               SubClasses = new List<string>() { "eng" }
-        //           }
-        //       }
-        //    };
-        //    var secReq = new MatchReqDetails()
-        //    {
-        //        Location = new Location() { lat = 1.1, lng = 0.1 },
-        //        MatchFactors = new List<Factor>()
-        //       {
-        //           new Factor()
-        //           {
-        //               Class = "gamming",
-        //               SubClasses = new List<string>() { "ps4","xbox","gameboy" }
-        //           }
-        //       }
-        //    };
+            var imgUrl = "";
+            var firstReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "sport",
+                       SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+                            }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
+                   },
+                   new Factor()
+                   {
+                       Class = "work",
+                       SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Prog", ImgUrl = imgUrl },
+                            }
+                    }
+                }
+            };
+            var secReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.5, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "sport",
+                       SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+                            }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
+                   },
+                   new Factor()
+                   {
+                       Class = "work",
+                       SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Prog", ImgUrl = imgUrl },
+                            }
+                    }
+                }
+            };
 
-        //    var thirdReq = new MatchReqDetails()
-        //    {
-        //        Location = new Location() { lat = 1.1, lng = 0.1 },
-        //        MatchFactors = new List<Factor>()
-        //       {
-        //           new Factor()
-        //           {
-        //               Class = "sport",
-        //               SubClasses = new List<string>() { "tennis" }
-        //           },
-        //           new Factor()
-        //           {
-        //               Class = "gamming",
-        //               SubClasses = new List<string>() { "xbox" }
-        //           }
-        //       }
-        //    };
+            var thirdReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "sport",
+                       SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+                            }
+                   },
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
+                   },
+                }
+            };
 
-        //    var fourthReq = new MatchReqDetails()
-        //    {
-        //        Location = new Location() { lat = 1.1, lng = 0.1 },
-        //        MatchFactors = new List<Factor>()
-        //       {
-        //           new Factor()
-        //           {
-        //               Class = "work",
-        //               SubClasses = new List<string>() { "xbox" }
-        //           }
-        //       }
-        //    };
+            var fourthReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.1, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+               {
+                   new Factor()
+                   {
+                       Class = "gamming",
+                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
+                   },
+                }
+            };
 
-        //    var first = new MatchRequest();
-        //    first.MatchReqDetails = firstReq;
-        //    var sec = new MatchRequest();
-        //    sec.MatchReqDetails = secReq;
-        //    var third = new MatchRequest();
-        //    third.MatchReqDetails = thirdReq;
-        //    var fourth = new MatchRequest();
-        //    fourth.MatchReqDetails = fourthReq;
+            var first = new MatchRequest();
+            first.MatchReqDetails = firstReq;
+            var sec = new MatchRequest();
+            sec.MatchReqDetails = secReq;
+            var third = new MatchRequest();
+            third.MatchReqDetails = thirdReq;
+            var fourth = new MatchRequest();
+            fourth.MatchReqDetails = fourthReq;
 
-        //    manager.CreateMatchRequest(first);
-        //    manager.CreateMatchRequest(third);
-        //    manager.CreateMatchRequest(sec);
-        //    manager.CreateMatchRequest(fourth);
-
-
-        //    handler.SendMatchReqToFindMatch();
-        //}
+            manager.CreateMatchRequest(first);
+            manager.CreateMatchRequest(third);
+            manager.CreateMatchRequest(sec);
+            manager.CreateMatchRequest(fourth);
+        }
 
     }
 }

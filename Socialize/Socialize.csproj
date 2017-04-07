@@ -253,6 +253,7 @@
     <Compile Include="Logic\OptionalMatchBuilder.cs" />
     <Compile Include="Logic\OptionalMatchContainer.cs" />
     <Compile Include="Logic\SocializeUtil.cs" />
+    <Compile Include="Logic\StartThreadHandler.cs" />
     <Compile Include="Migrations\201704061222408_Initial.cs" />
     <Compile Include="Migrations\201704061222408_Initial.Designer.cs">
       <DependentUpon>201704061222408_Initial.cs</DependentUpon>

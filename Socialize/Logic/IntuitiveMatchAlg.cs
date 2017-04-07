@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Socialize.Models;
+using log4net;
 
 namespace Socialize.Logic
 {
@@ -12,9 +13,10 @@ namespace Socialize.Logic
     public class IntuitiveMatchAlg : IMatchAlg
     {
         public double MAX_DISTANCE  => 25;
-
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public Dictionary<int, int> CalcOptionalMatch(MatchRequest first, MatchRequest sec)
         {
+
             //Holds the total subclasses that selected by the two requests
             var firstTotalSubClassesNum = 0;
             var secTotalSubClassesNum = 0;
@@ -50,6 +52,7 @@ namespace Socialize.Logic
             var finaleFirstRes = (int)((firstSum / firstTotalSubClassesNum) * 100);
             var finaleSecRes = (int)((secSum / secTotalSubClassesNum) * 100);
 
+            Log.Debug($"Calculate match req IDs: {first.Id},  {sec.Id}, results was: {finaleFirstRes},   {finaleSecRes}");
             return new Dictionary<int, int>() { { first.Id, finaleFirstRes }, { sec.Id, finaleSecRes } };
         }
 
@@ -73,7 +76,7 @@ namespace Socialize.Logic
                 {
                     //Add 0.5 for the first match req strength for class match only
                     firstSum += 0.5;
-                    var subclassFound = FactorClassFound.SubClasses.Any(x => x.Equals(subclass));
+                    var subclassFound = FactorClassFound.SubClasses.Any(x => x.Name.Equals(subclass.Name));
                     if (subclassFound)
                     {
                         //Add more 0.5 score if perfect sub-class match

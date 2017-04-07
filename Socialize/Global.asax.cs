@@ -1,4 +1,5 @@
 ﻿using Socialize.App_Start;
+using Socialize.Logic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,9 @@ namespace Socialize
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            //Start running the thread
+            var dummy = StartThreadHandler.workerFactory.Value;
         }
     }
 }
