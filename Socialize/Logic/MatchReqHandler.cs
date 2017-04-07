@@ -23,14 +23,12 @@ namespace Socialize.Logic
     public class MatchReqHandler
     {
         //Delegete function which the matchManager subscribed to
-        //public delegate void OptionalMatchFoundEventHandler(object source, OptionalMatchEventArgs args);
-        //public event OptionalMatchFoundEventHandler OptionalMatchFound;
         public event EventHandler<OptionalMatchEventArgs> OptionalMatchFound;
 
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         //define the minimum value of match strength, below this -> no optional match
-        private double MIN_MATCH_STRENGTH = 50;
+        private double MIN_MATCH_STRENGTH => 50;
          
         //singlton implementation
         private static MatchReqHandler ReqHandlerInstance;
@@ -39,7 +37,7 @@ namespace Socialize.Logic
         private IMatchAlg MatchAlg;
 
         //singlton implementation
-        public static MatchReqHandler GetMatchReqHandlerInstance(MatchAlgFactory.AlgorithemsTypes algType)
+        public static MatchReqHandler GetMatchReqHandlerInstance(AlgorithemsTypes algType)
         {
             if (ReqHandlerInstance == null)
             {
@@ -52,32 +50,29 @@ namespace Socialize.Logic
         }
 
         //singlton implementation
-        private MatchReqHandler(MatchAlgFactory.AlgorithemsTypes algType)
+        private MatchReqHandler(AlgorithemsTypes algType)
         {
             ReqContainerInstance = MatchReqContainer.GetMatchReqContainerInstance();
-            MatchAlg = MatchAlgFactory.GetMatchAlg(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
-            //Set maximum distance between two locations to 25
-            MatchAlg.MAX_DISTANCE = 25;
+            MatchAlg = MatchAlgFactory.GetMatchAlg(AlgorithemsTypes.IntuitiveMatchAlg);
         }
 
         //Event Raised function
-        protected virtual void OnOptionalMatchFound(Dictionary<int, int> res)
+        protected virtual void OnOptionalMatchFound(Dictionary<int, int> algResult)
         {
+            //Check if there is a listener in the container
             if (OptionalMatchFound != null)
             {
-                var parseObj = JsonConvert.SerializeObject(res);
+                var parseObj = JsonConvert.SerializeObject(algResult);
                 Log.Debug($"Found optional match with results: {parseObj}");
                 //Notify matchManager that optional match found
-                OptionalMatchFound(this, new OptionalMatchEventArgs() { results = res } );
+                OptionalMatchFound(this, new OptionalMatchEventArgs() { results = algResult } );
                 return;
             }
 
             else
             {
                 Log.Debug("MatchManager doesn't subscribed to events handler");
-                throw new MatchRequestHandlerException(
-                "MatchMAnager doesn't subscribed to events handler"
-                );
+                throw new MatchRequestHandlerException("MatchMAnager doesn't subscribed to events handler");
             }
         }
 
@@ -87,37 +82,28 @@ namespace Socialize.Logic
             var allOtherMatchReq = ReqContainerInstance.GetAllOtherRequests(nextMatchReq.Id);
 
             //Verify the queue holds more than two match requests
-            if(nextMatchReq == null || allOtherMatchReq == null)
+            if(nextMatchReq == null || allOtherMatchReq.Length == 0)
             {
                 //TODO - think on optimization for empty / less than two object
                 return;
             }
 
-            //Verify next match request not suspended
-            if (!nextMatchReq.WaitForOptionalMatchRes)
+            //TODO - BETA implement this loop in more efficient way
+            foreach (var matchReq in allOtherMatchReq)
             {
-                //TODO - BETA implement this loop in more efficient way
-                foreach (var matchReq in allOtherMatchReq)
+                //Verify other match request not suspended
+                if (!matchReq.WaitForOptionalMatchRes)
                 {
-                    //Verify other match request not suspended
-                    if (!matchReq.WaitForOptionalMatchRes)
-                    {
-                        var res = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
+                    var algResult = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
 
-                        //Check if there is optional match properties
-                        if(res != null)
-                        {
-                            //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
-                            if (!(res.Any(x => x.Value < MIN_MATCH_STRENGTH)))
-                            {
-                                OnOptionalMatchFound(res);
-                                return;
-                            }
-                        }
+                    //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
+                    if (!(algResult.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+                    {
+                        OnOptionalMatchFound(algResult);
+                        return;
                     }
                 }
             }
-
         }
     }
 }

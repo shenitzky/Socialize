@@ -11,7 +11,7 @@ namespace Socialize.Logic
      */
     public class IntuitiveMatchAlg : IMatchAlg
     {
-        public double MAX_DISTANCE { get; set; }
+        public double MAX_DISTANCE  => 25;
 
         public Dictionary<int, int> CalcOptionalMatch(MatchRequest first, MatchRequest sec)
         {
@@ -20,13 +20,11 @@ namespace Socialize.Logic
             var secTotalSubClassesNum = 0;
 
             //Check proximity between the two requests
-            var distance = SocializeUtil.CalculateLocationPriximity(
-                first.MatchReqDetails.Location, sec.MatchReqDetails.Location
-                );
+            var distance = SocializeUtil.CalculateLocationPriximity(first.MatchReqDetails.Location, sec.MatchReqDetails.Location);
 
             if(distance > MAX_DISTANCE)
             {
-                return null;
+                return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
             }
 
             var firstFactors = first.MatchReqDetails.MatchFactors;
@@ -39,13 +37,13 @@ namespace Socialize.Logic
                 var results = FindFactorMatch(factor, secFactors);
                 firstSum += results.First();
                 secSum += results.Last();
-                firstTotalSubClassesNum += factor.SubClasses.ToArray().Length;
+                firstTotalSubClassesNum += factor.SubClasses.Count;
             }
 
             //Calculate the total number of sub-classes that selected by the second match request
             foreach(var factor in secFactors)
             {
-                secTotalSubClassesNum += factor.SubClasses.ToArray().Length;
+                secTotalSubClassesNum += factor.SubClasses.Count;
             }
 
             //Calculate the finale results of the match strength
@@ -55,8 +53,7 @@ namespace Socialize.Logic
             return new Dictionary<int, int>() { { first.Id, finaleFirstRes }, { sec.Id, finaleSecRes } };
         }
 
-
-        public List<double> FindFactorMatch(Factor factor, List<Factor> factors)
+        private List<double> FindFactorMatch(Factor factor, List<Factor> factors)
         {
             var firstSum = 0.0;
             var secSum = 0.0;
@@ -68,16 +65,16 @@ namespace Socialize.Logic
             {
                 //Multiplay the total subclasses that found by 0.5 to 
                 //calculate the second match req strength
-                var FactorSubClasses = FactorClassFound.SubClasses.ToArray();
-                secSum += FactorSubClasses.Length * 0.5;
-                
+                var FactorSubClasses = FactorClassFound.SubClasses.Count;
+                secSum += FactorSubClasses * 0.5;
+
 
                 foreach (var subclass in factor.SubClasses)
                 {
                     //Add 0.5 for the first match req strength for class match only
                     firstSum += 0.5;
-                    var subclassFound = FactorSubClasses.Where(x => x.Equals(subclass)).FirstOrDefault();
-                    if(subclassFound != null)
+                    var subclassFound = FactorClassFound.SubClasses.Any(x => x.Equals(subclass));
+                    if (subclassFound)
                     {
                         //Add more 0.5 score if perfect sub-class match
                         firstSum += 0.5;
@@ -89,6 +86,5 @@ namespace Socialize.Logic
             return new List<double>() { firstSum, secSum };
 
         }
-
     }
 }

@@ -95,6 +95,7 @@ namespace Socialize.Logic
             if (MatchRequests.ContainsKey(matchReqId))
             {
                 MatchRequests[matchReqId].WaitForOptionalMatchRes = false;
+                RequestsQ.Enqueue(matchReqId);
             }
             else
             {

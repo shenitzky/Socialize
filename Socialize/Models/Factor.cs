@@ -19,6 +19,6 @@ namespace Socialize.Models
         // Class of the factor
         public string Class { get; set; }
         // List of sub-classes object under the class title
-        public List<string> SubClasses { get; set; }
+        public ICollection<SubClass> SubClasses { get; set; }
     }
 }

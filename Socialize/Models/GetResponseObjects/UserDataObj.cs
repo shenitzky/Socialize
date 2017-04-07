@@ -19,6 +19,6 @@ namespace Socialize.Models.GetResponseObjects
         public string ImgUrl { get; set; }
         public int Age { get; set; }
         public bool Premium { get; set; }
-        public FactorObj[] Factors { get; set; }
+        public Factor[] Factors { get; set; }
     }
 }

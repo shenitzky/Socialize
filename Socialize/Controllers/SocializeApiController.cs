@@ -14,6 +14,8 @@ using Socialize.FakeData;
 using System.Web.Http.Cors;
 using log4net;
 using Newtonsoft.Json;
+using System.Data.Entity;
+using System.Web;
 
 namespace Socialize.Controllers
 {
@@ -29,8 +31,8 @@ namespace Socialize.Controllers
             var parseObj = JsonConvert.SerializeObject(newMatchReq);
             Log.Debug($"POST CreateMatcReq calld with match details {parseObj}");
             if (FakeDataUtil.Fake)
-
                 return 1;
+
             using (var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
@@ -132,18 +134,21 @@ namespace Socialize.Controllers
             using (var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
-                var user = db.Users.FirstOrDefault(x => x.Id == userId);
+                //var userId = "1143afed-6abc-4ef4-b42e-894720979b3a";
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
 
                 if (user == null)
                     throw new Exception($"Can not find userId- {userId}");
 
-                var newFactors = updateUserData.Data.Select(x => new Factor() { Class = x.Class, SubClasses = x.SubClasses, UserId = userId }).ToList();
+                var newFactors = updateUserData.Data;
                 var originalFactors = user.Factors ?? new List<Factor>();
 
                 var unionFactors = originalFactors.Union(newFactors);
                 var distinctFactors = unionFactors.DistinctBy(x => x.Class + x.SubClasses).ToList();
 
+                db.Factors.AddRange(distinctFactors);
                 user.Factors = distinctFactors;
+
                 await db.SaveChangesAsync();
             }
         }
@@ -161,7 +166,7 @@ namespace Socialize.Controllers
 
         //Get all the available factors for user registration
         [HttpGet]
-        public async Task<FactorObj[]> GetAllSystemFactors()
+        public async Task<Factor[]> GetAllSystemFactors()
         {
             Log.Debug($"GET GetAllSystemFactors calld");
             if (FakeDataUtil.Fake)
@@ -173,45 +178,46 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<List<int>> Test()
         {
-            var firstReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "XXX",
-                       SubClasses = new List<string>() { "YYYY" }
-                   },
-                   new Factor()
-                   {
-                       Class = "ZZZZ",
-                       SubClasses = new List<string>() { "TTTTT" }
-                   }
-               }
-            };
-            var secReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "XXX",
-                       SubClasses = new List<string>() { "YYYY" }
-                   },
-                   new Factor()
-                   {
-                       Class = "ZZZZ",
-                       SubClasses = new List<string>() { "TTTTT" }
-                   }
-               }
-            };
+            return null;
+            //var firstReq = new MatchReqDetails()
+            //{
+            //    Location = new Location() { lat = 1.1, lng = 0.1 },
+            //    MatchFactors = new List<Factor>()
+            //   {
+            //       new Factor()
+            //       {
+            //           Class = "XXX",
+            //           SubClasses = new List<string>() { "YYYY" }
+            //       },
+            //       new Factor()
+            //       {
+            //           Class = "ZZZZ",
+            //           SubClasses = new List<string>() { "TTTTT" }
+            //       }
+            //   }
+            //};
+            //var secReq = new MatchReqDetails()
+            //{
+            //    Location = new Location() { lat = 1.1, lng = 0.1 },
+            //    MatchFactors = new List<Factor>()
+            //   {
+            //       new Factor()
+            //       {
+            //           Class = "XXX",
+            //           SubClasses = new List<string>() { "YYYY" }
+            //       },
+            //       new Factor()
+            //       {
+            //           Class = "ZZZZ",
+            //           SubClasses = new List<string>() { "TTTTT" }
+            //       }
+            //   }
+            //};
 
-            var firstId = await CreateMatcReq(firstReq);
-            var secId = await CreateMatcReq(secReq);
+            //var firstId = await CreateMatcReq(firstReq);
+            //var secId = await CreateMatcReq(secReq);
 
-            return new List<int>() { firstId, secId };
+            //return new List<int>() { firstId, secId };
         }
 
 
@@ -226,105 +232,118 @@ namespace Socialize.Controllers
         }
 
         [HttpGet]
-        public async Task Test3()
+        public async Task AddAvatarImg()
         {
-            MatchManager manager = MatchManager.GetManagerInstance();
-            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
-            manager.CreateMatchRequest(new MatchRequest());
-            manager.CreateMatchRequest(new MatchRequest());
-            handler.SendMatchReqToFindMatch();
+            using(var db = ApplicationDbContext.Create())
+            {
+                var all = db.AvatarImgs.Select(x => x);
+
+                db.AvatarImgs.RemoveRange(all);
+
+                var domain = HttpContext.Current.Request.Url.Authority;
+                var imgUrl = $"{domain}/Content/Images/Profiles/profile";
+ 
+                for(var i = 1; i <= 7; i++)
+                {
+                    var imageToiInsert = new AvatarImg() { ImgUrl = imgUrl + i + ".png" };
+                    db.AvatarImgs.Add(imageToiInsert);
+                }
+
+                await db.SaveChangesAsync();
+
+            }            
         }
 
-        [HttpGet]
-        public async Task Test4()
-        {
-            MatchManager manager = MatchManager.GetManagerInstance();
-            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(MatchAlgFactory.AlgorithemsTypes.IntuitiveMatchAlg);
+        //[HttpGet]
+        //public async Task Test4()
+        //{
+        //    MatchManager manager = MatchManager.GetManagerInstance();
+        //    MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
 
 
-            var firstReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "sport",
-                       SubClasses = new List<string>() { "soccer", "basketball" }
-                   },
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<string>() { "ps4" }
-                   },
-                   new Factor()
-                   {
-                       Class = "work",
-                       SubClasses = new List<string>() { "eng" }
-                   }
-               }
-            };
-            var secReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<string>() { "ps4","xbox","gameboy" }
-                   }
-               }
-            };
+        //    var firstReq = new MatchReqDetails()
+        //    {
+        //        Location = new Location() { lat = 1.1, lng = 0.1 },
+        //        MatchFactors = new List<Factor>()
+        //       {
+        //           new Factor()
+        //           {
+        //               Class = "sport",
+        //               SubClasses = new List<string>() { "soccer", "basketball" }
+        //           },
+        //           new Factor()
+        //           {
+        //               Class = "gamming",
+        //               SubClasses = new List<string>() { "ps4" }
+        //           },
+        //           new Factor()
+        //           {
+        //               Class = "work",
+        //               SubClasses = new List<string>() { "eng" }
+        //           }
+        //       }
+        //    };
+        //    var secReq = new MatchReqDetails()
+        //    {
+        //        Location = new Location() { lat = 1.1, lng = 0.1 },
+        //        MatchFactors = new List<Factor>()
+        //       {
+        //           new Factor()
+        //           {
+        //               Class = "gamming",
+        //               SubClasses = new List<string>() { "ps4","xbox","gameboy" }
+        //           }
+        //       }
+        //    };
 
-            var thirdReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "sport",
-                       SubClasses = new List<string>() { "tennis" }
-                   },
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<string>() { "xbox" }
-                   }
-               }
-            };
+        //    var thirdReq = new MatchReqDetails()
+        //    {
+        //        Location = new Location() { lat = 1.1, lng = 0.1 },
+        //        MatchFactors = new List<Factor>()
+        //       {
+        //           new Factor()
+        //           {
+        //               Class = "sport",
+        //               SubClasses = new List<string>() { "tennis" }
+        //           },
+        //           new Factor()
+        //           {
+        //               Class = "gamming",
+        //               SubClasses = new List<string>() { "xbox" }
+        //           }
+        //       }
+        //    };
 
-            var fourthReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "work",
-                       SubClasses = new List<string>() { "xbox" }
-                   }
-               }
-            };
+        //    var fourthReq = new MatchReqDetails()
+        //    {
+        //        Location = new Location() { lat = 1.1, lng = 0.1 },
+        //        MatchFactors = new List<Factor>()
+        //       {
+        //           new Factor()
+        //           {
+        //               Class = "work",
+        //               SubClasses = new List<string>() { "xbox" }
+        //           }
+        //       }
+        //    };
 
-            var first = new MatchRequest();
-            first.MatchReqDetails = firstReq;
-            var sec = new MatchRequest();
-            sec.MatchReqDetails = secReq;
-            var third = new MatchRequest();
-            third.MatchReqDetails = thirdReq;
-            var fourth = new MatchRequest();
-            fourth.MatchReqDetails = fourthReq;
+        //    var first = new MatchRequest();
+        //    first.MatchReqDetails = firstReq;
+        //    var sec = new MatchRequest();
+        //    sec.MatchReqDetails = secReq;
+        //    var third = new MatchRequest();
+        //    third.MatchReqDetails = thirdReq;
+        //    var fourth = new MatchRequest();
+        //    fourth.MatchReqDetails = fourthReq;
 
-            manager.CreateMatchRequest(first);
-            manager.CreateMatchRequest(third);
-            manager.CreateMatchRequest(sec);
-            manager.CreateMatchRequest(fourth);
+        //    manager.CreateMatchRequest(first);
+        //    manager.CreateMatchRequest(third);
+        //    manager.CreateMatchRequest(sec);
+        //    manager.CreateMatchRequest(fourth);
 
 
-            handler.SendMatchReqToFindMatch();
-        }
+        //    handler.SendMatchReqToFindMatch();
+        //}
 
     }
 }

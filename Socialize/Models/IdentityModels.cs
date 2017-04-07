@@ -5,6 +5,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Socialize.Models
 {
@@ -21,6 +22,8 @@ namespace Socialize.Models
         public int AcceptNum { get; set; }
 
         public ICollection<FinalMatch> FinalMatches { get; set; }
+
+        [ForeignKey("UserId")]
         public ICollection<Factor> Factors { get; set; }
 
 

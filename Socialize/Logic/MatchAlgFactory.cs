@@ -11,10 +11,7 @@ namespace Socialize.Logic
     public class MatchAlgFactory
     {
         // Enums of all algorithem types that the factory can create
-        public enum AlgorithemsTypes
-        {
-            IntuitiveMatchAlg,
-        }
+        
 
         public static IMatchAlg GetMatchAlg(AlgorithemsTypes algType)
         {
@@ -29,6 +26,11 @@ namespace Socialize.Logic
         }
     }
 
+    public enum AlgorithemsTypes
+    {
+        IntuitiveMatchAlg,
+    }
 
-    
+
+
 }

@@ -31,7 +31,7 @@ namespace Socialize.Logic
             return new FactorObj()
             {
                 Class = source.Class,
-                SubClasses = source.SubClasses
+                SubClasses = source.SubClasses.Select(x => x.Name).ToList()
             };
         }
 

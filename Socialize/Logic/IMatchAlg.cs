@@ -19,7 +19,7 @@ namespace Socialize.Logic
          */
 
         //Specify the maximum distance between two different locations
-        double MAX_DISTANCE { get; set; }
+        double MAX_DISTANCE { get; }
 
 
         Dictionary<int, int> CalcOptionalMatch(MatchRequest first, MatchRequest sec);

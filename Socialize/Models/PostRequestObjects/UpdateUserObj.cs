@@ -12,6 +12,6 @@ namespace Socialize.Models.PostRequestObjects
 {
     public class UpdateUserObj
     {
-        public FactorObj[] Data { get; set; }
+        public Factor[] Data { get; set; }
     }
 }

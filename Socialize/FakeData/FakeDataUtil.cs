@@ -12,31 +12,47 @@ namespace Socialize.FakeData
         public static bool Fake = true;
         public static UserDataObj CreateFakeUserData()
         {
-            return new UserDataObj()
+            using(var db = ApplicationDbContext.Create())
             {
-                Age = 10,
-                Description = "Yossi Gay",
-                FirstName = "Yossi",
-                LastName = "Gay",
-                Id = "1143afed-6abc-4ef4-b42e-894720979b3a",
-                ImgUrl = "",
-                Mail = "xxx@gmail.com",
-                Premium = false,
+                var fakeImg = db.AvatarImgs.First();
 
-                Factors = new FactorObj[]
+                return new UserDataObj()
                 {
-                    new FactorObj()
+                    Age = 10,
+                    Description = "Yossi Gay",
+                    FirstName = "Yossi",
+                    LastName = "Gay",
+                    Id = "1143afed-6abc-4ef4-b42e-894720979b3a",
+                    ImgUrl = fakeImg.ImgUrl,
+                    Mail = "xxx@gmail.com",
+                    Premium = false,
+
+                    Factors = new Factor[]
+                {
+                    new Factor()
                         {
                             Class = "Sport" ,
-                            SubClasses = new List<string>() { "Soccer", "Tennis"}
+                            SubClasses = new List<SubClass>() { new SubClass() { Name = "Soccer" } , new SubClass() { Name = "Tennis"} }
                         },
-                    new FactorObj()
+                    new Factor()
+                        {
+                            Class = "Work" ,
+                            SubClasses = new List<SubClass>() { new SubClass() { Name = "Prog" } , new SubClass() { Name = "Eng"} }
+                        },
+                    new Factor()
+                        {
+                            Class = "Hobbies" ,
+                            SubClasses = new List<SubClass>() { new SubClass() { Name = "Baking" } , new SubClass() { Name = "Fishing"}, new SubClass() { Name = "Cleaning" } }
+                        },
+                    new Factor()
                         {
                             Class = "Gamming" ,
-                            SubClasses = new List<string>() { "PS4", "XBOX"}
+                            SubClasses = new List<SubClass>() { new SubClass() { Name = "PS4" }, new SubClass() { Name = "XBOX" }, new SubClass() { Name = "GameBoy" }, new SubClass() { Name = "Tetris" }, new SubClass() { Name = "PS3" }, new SubClass() { Name = "PS2" } }
                         }
                 }
-            };
+                };
+            }
+            
         }
 
         public static OptinalMatchObj CreateFakeOptionalMatch()
@@ -50,12 +66,12 @@ namespace Socialize.FakeData
                    new Factor()
                    {
                        Class = "XXX",
-                       SubClasses = new List<string>() { "YYYY" }
+                       SubClasses = new List<SubClass>() { new SubClass() { Name =  "YYYY", ImgUrl = "" } }
                    },
                    new Factor()
                    {
                        Class = "ZZZZ",
-                       SubClasses = new List<string>() { "TTTTT" }
+                       SubClasses = new List<SubClass>() { new SubClass() { Name =  "YYYY", ImgUrl = "" } }
                    }
                },
                 MatchRequestId = 121,
@@ -73,19 +89,61 @@ namespace Socialize.FakeData
                 
         }
 
-        public static FactorObj[] CreateFakeFactors()
+        public static Factor[] CreateFakeFactors()
         {
-            return new FactorObj[]
+            var domain = HttpContext.Current.Request.Url.Authority;
+            var imgUrl = $"{domain}/Content/Images/Factors/games.png";
+
+            return new Factor[]
                 {
-                    new FactorObj()
+                    new Factor()
                         {
                             Class = "Sport" ,
-                            SubClasses = new List<string>() { "Soccer", "Tennis"}
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Tennis3", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Tennis1", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Tennis2", ImgUrl = imgUrl }
+                            }
                         },
-                    new FactorObj()
+                    new Factor()
+                        {
+                            Class = "Work" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Prog", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Eng1", ImgUrl = imgUrl},
+                                new SubClass() { Name = "Eng2", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Eng3", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Eng4", ImgUrl = imgUrl }
+                            }
+                        },
+                    new Factor()
+                        {
+                            Class = "Hobbies" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Baking", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Fishing", ImgUrl = imgUrl},
+                                new SubClass() { Name = "Cleaning", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Fishing", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Fishing5", ImgUrl = imgUrl }
+                            }
+                        },
+                    new Factor()
                         {
                             Class = "Gamming" ,
-                            SubClasses = new List<string>() { "PS4", "XBOX"}
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "PS4", ImgUrl = imgUrl },
+                                new SubClass() { Name = "XBOX", ImgUrl = imgUrl },
+                                new SubClass() { Name = "GameBoy", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Tetris", ImgUrl = imgUrl },
+                                new SubClass() { Name = "PS3", ImgUrl = imgUrl },
+                                new SubClass() { Name = "PS2", ImgUrl = imgUrl }
+                            }
                         }
                 };
         }
