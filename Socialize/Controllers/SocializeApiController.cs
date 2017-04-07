@@ -100,13 +100,20 @@ namespace Socialize.Controllers
 
         //Check optional match status - if confirmed by all other participants (loop)
         [HttpGet]
-        public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId)
+        public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId, int matchReqId)
         {
             Log.Debug($"GET CheckOptionalMatchStatus calld with id {optionalMatchId}");
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeFinalMatch();
 
-            throw new NotImplementedException();
+            var manager = MatchManager.GetManagerInstance();
+            var finalMatch = manager.CheckOptionalMatchStatus(optionalMatchId);
+            if(finalMatch != null)
+            {
+                manager.RemoveMatchRequest(matchReqId);
+                return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
+            }
+            return null;
         }
 
         //Update user detail by user id
@@ -222,7 +229,7 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task AddAvatarImg()
         {
-            using(var db = ApplicationDbContext.Create())
+            using (var db = ApplicationDbContext.Create())
             {
                 var all = db.AvatarImgs.Select(x => x);
 
@@ -230,8 +237,8 @@ namespace Socialize.Controllers
 
                 var domain = HttpContext.Current.Request.Url.Authority;
                 var imgUrl = $"{domain}/Content/Images/Profiles/profile";
- 
-                for(var i = 1; i <= 7; i++)
+
+                for (var i = 1; i <= 7; i++)
                 {
                     var imageToiInsert = new AvatarImg() { ImgUrl = imgUrl + i + ".png" };
                     db.AvatarImgs.Add(imageToiInsert);
@@ -239,7 +246,7 @@ namespace Socialize.Controllers
 
                 await db.SaveChangesAsync();
 
-            }            
+            }
         }
 
         [HttpGet]
@@ -411,5 +418,45 @@ namespace Socialize.Controllers
             manager.CreateMatchRequest(fourth);
         }
 
+
+        [HttpGet]
+        public async Task Test5()
+        {
+            var imgUrl = "";
+            MatchManager manager = MatchManager.GetManagerInstance();
+            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
+            var first = new MatchRequest();
+            var firstReq = new MatchReqDetails()
+            {
+                Location = new Location() { lat = 1.5, lng = 0.1 },
+                MatchFactors = new List<Factor>()
+                   {
+                       new Factor()
+                       {
+                           Class = "sport",
+                           SubClasses = new List<SubClass>()
+                                {
+                                    new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
+                                    new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
+                                }
+                       },
+                       new Factor()
+                       {
+                           Class = "gamming",
+                           SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
+                       },
+                       new Factor()
+                       {
+                           Class = "work",
+                           SubClasses = new List<SubClass>()
+                                {
+                                    new SubClass() { Name = "Prog", ImgUrl = imgUrl },
+                                }
+                        }
+                    }
+            };
+            first.MatchReqDetails = firstReq;
+            manager.CreateMatchRequest(first);
+        }
     }
 }

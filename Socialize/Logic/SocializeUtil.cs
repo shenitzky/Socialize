@@ -47,5 +47,32 @@ namespace Socialize.Logic
                 MatchStrength = source.MatchStrength[matchReqId]
             };
         }
+
+        //convert from FinalMatch to FinalMatchObj
+        public static FinalMatchObj ConvertToFinalMatchObj(FinalMatch source, int matchReqId)
+        {
+            return new FinalMatchObj()
+            {
+                Locations = ConvertLocationStringToLocationsList(source.Locations),
+                MatchStrength = source.MatchStrength[matchReqId]
+            };
+        }
+
+        public static string ConvertLocationsToString(List<Location> locations)
+        {
+            var str = locations.First().lat.ToString() + "," + locations.First().lng.ToString() + ":";
+            str += locations.Last().lat.ToString() + "," + locations.Last().lng.ToString();
+            return str;
+        }
+        public static List<Location> ConvertLocationStringToLocationsList(string locations)
+        {
+            var firstRawLoc = locations.Split(':')[0];
+            var secRawLoc = locations.Split(':')[1];
+
+            var firstLocObj = new Location() { lat = Double.Parse(firstRawLoc.Split(',')[0]), lng = Double.Parse(firstRawLoc.Split(',')[1]) };
+            var secLocObj = new Location() { lat = Double.Parse(secRawLoc.Split(',')[0]), lng = Double.Parse(secRawLoc.Split(',')[1]) };
+
+            return new List<Location>() { firstLocObj, secLocObj };
+        }
     }
 }

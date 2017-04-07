@@ -19,9 +19,9 @@ namespace Socialize.Models
         // Time-stamp
         public DateTime Created { get; set; }
         // List of the match strength - value for each user
-        public List<int> MatchStrength { get; set; }
+        public Dictionary<int,int> MatchStrength { get; set; }
         // Location where the match occured
-        public Location Location { get; set; }
+        public string Locations { get; set; }
         // True if the match accepted, False otherwise
         public bool IsAccepted { get; set; }
         // Factor that calculated in the match

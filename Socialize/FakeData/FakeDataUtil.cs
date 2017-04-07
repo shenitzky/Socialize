@@ -83,7 +83,7 @@ namespace Socialize.FakeData
         {
             return new FinalMatchObj()
             {
-                Locations = new List<Location>() { new Location() { lat = 1.2, lng = 1.1}, new Location() { lat = 5.4, lng = 5.6} },
+                Locations = new List<Location>() { new Location() { lat = 31.8962843, lng = 34.8148716}, new Location() { lat = 31.8962844, lng = 34.8148712} },
                 MatchStrength = 98
             };
                 

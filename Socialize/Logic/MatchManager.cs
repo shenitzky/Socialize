@@ -41,6 +41,7 @@ namespace Socialize.Logic
             MatchReqContainer.AddNewMatchReq(matchReq);
         }
 
+
         //update match request location by id in the container
         public void UpdateMatchRequest(int matchReqId, Location newLocation)
         {
@@ -56,6 +57,12 @@ namespace Socialize.Logic
                 return OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId);
             }
             return null;
+        }
+
+        //Check if found optional match or if timeout occured
+        public void RemoveMatchRequest(int matchReqId)
+        {
+            MatchReqContainer.RemoveMatchReq(matchReqId);
         }
 
         //Accept (status = true ) or decline (status = false) optional match offer
@@ -97,5 +104,40 @@ namespace Socialize.Logic
             OptionalMatchContainer.AddOptionalMatch(optionalMatch);
         }
 
+        //Check if optional match accepted by all sides or if timeout occured
+        public FinalMatch CheckOptionalMatchStatus(int optionalMatchId)
+        {
+            var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
+        
+            return optionalMatch != null ? BuildFinalMatch(optionalMatch) : null;
+        }
+
+        private FinalMatch BuildFinalMatch(IOptionalMatch optionalMatch)
+        {
+            using (var db = ApplicationDbContext.Create())
+            {
+                var firstMatch = MatchReqContainer.GetMatchReqById(optionalMatch.MatchRequestIds.First());
+                var secMatch = MatchReqContainer.GetMatchReqById(optionalMatch.MatchRequestIds.Last());
+
+                var matchLocations = new List<Location>() { firstMatch.MatchReqDetails.Location, secMatch.MatchReqDetails.Location };
+                var locationAsString = SocializeUtil.ConvertLocationsToString(matchLocations);
+                var userIds = new List<string>() { firstMatch.MatchOwner, secMatch.MatchOwner };
+
+                var finalMatch = new FinalMatch()
+                {
+                    Created = DateTime.Now,
+                    Factors = optionalMatch.MatchedFactors,
+                    IsAccepted = true,
+                    Locations = locationAsString,
+                    MatchStrength = optionalMatch.MatchStrength,
+                    UsersId = userIds
+                };
+
+                //db.FinalMatches.Add(finalMatch);
+                //db.SaveChanges();
+
+                return finalMatch;
+            }
+        }
     }
 }
