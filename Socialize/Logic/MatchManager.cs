@@ -1,6 +1,7 @@
 ﻿using log4net;
 using Newtonsoft.Json;
 using Socialize.Models;
+using Socialize.Models.GetResponseObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,6 +84,31 @@ namespace Socialize.Logic
                     OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
                 }
             }
+        }
+
+        public UserDataObj GetMatchedUserDetailsByMatchReqId(int matchReqId)
+        {
+            using(var db = ApplicationDbContext.Create())
+            {
+                var matchReq = MatchReqContainer.GetMatchReqById(matchReqId);
+                var user = db.Users.FirstOrDefault(x => x.Id == matchReq.MatchOwner);
+
+                var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
+                var desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+
+                return new UserDataObj()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+
+                    ImgUrl = user.ImgUrl,
+                    Age = user.Age,
+
+                    Description = desc,
+                };
+            }
+            
+
         }
 
         //Invoked Event function, create optional match and add to optional container, and suspends Match requests

@@ -19,7 +19,6 @@ namespace Socialize.FakeData
                 return new UserDataObj()
                 {
                     Age = 10,
-                    Description = "Yossi Gay",
                     FirstName = "Yossi",
                     LastName = "Gay",
                     Id = "1143afed-6abc-4ef4-b42e-894720979b3a",
@@ -55,13 +54,30 @@ namespace Socialize.FakeData
             
         }
 
+        public static string FakeUserImgUrl()
+        {
+            using (var db = ApplicationDbContext.Create())
+            {
+                var fakeImg = db.AvatarImgs.First();
+                return fakeImg.ImgUrl;
+            }
+        }
+
         public static OptinalMatchObj CreateFakeOptionalMatch()
         {
-            return new OptinalMatchObj()
+            using(var db = ApplicationDbContext.Create())
             {
-                Created = DateTime.Now,
-                Id = 22,
-                MatchedFactors = new List<Factor>()
+                var fakeImg = db.AvatarImgs.First();
+
+                var rawFactors = FakeDataUtil.CreateFakeFactorsWithoutUrl();
+                var factors = rawFactors.Length > 5 ? rawFactors.Take(5) : rawFactors;
+                var desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+
+                return new OptinalMatchObj()
+                {
+                    Created = DateTime.Now,
+                    Id = 22,
+                    MatchedFactors = new List<Factor>()
                {
                    new Factor()
                    {
@@ -74,9 +90,21 @@ namespace Socialize.FakeData
                        SubClasses = new List<SubClass>() { new SubClass() { Name =  "YYYY", ImgUrl = "" } }
                    }
                },
-                MatchRequestId = 121,
-                MatchStrength = 88,
-            };
+                    MatchRequestId = 121,
+                    MatchStrength = 88,
+
+                    MatchedDetails = new UserDataObj()
+                    {
+                        FirstName = "Moshe",
+                        LastName = "Levi",
+
+                        Age = 23,
+                        ImgUrl = fakeImg.ImgUrl,
+
+                        Description = desc
+                    }
+                };
+            }
         }
 
         public static FinalMatchObj CreateFakeFinalMatch()
@@ -89,10 +117,10 @@ namespace Socialize.FakeData
                 
         }
 
-        public static Factor[] CreateFakeFactors()
+        public static Factor[] CreateFakeFactors(bool imgUrlRequire)
         {
             var domain = HttpContext.Current.Request.Url.Authority;
-            var imgUrl = $"{domain}/Content/Images/Factors/games.png";
+            var imgUrl = imgUrlRequire ? $"{domain}/Content/Images/Factors/games.png" : "";
 
             return new Factor[]
                 {
@@ -146,6 +174,11 @@ namespace Socialize.FakeData
                             }
                         }
                 };
+        }
+
+        public static Factor[] CreateFakeFactorsWithoutUrl()
+        {
+            return CreateFakeFactors(false);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Socialize.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201704061222408_Initial"; }
+            get { return "201704140737525_Initial"; }
         }
         
         string IMigrationMetadata.Source

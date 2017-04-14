@@ -56,20 +56,29 @@ namespace Socialize.Controllers
             Log.Debug($"POST UpdateAndCheckMatcReq calld with updates {parseObj}");
 
             if (FakeDataUtil.Fake)
-                return null;
+                return FakeDataUtil.CreateFakeOptionalMatch();
 
             var matchManager = MatchManager.GetManagerInstance();
             var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqUpdate.matchReqId);
-            var result = optionalMatch != null ? SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqUpdate.matchReqId) : null;
+            
+            //If optional match found
+            if(optionalMatch != null)
+            {
+                //Get matched user details
+                var matchedMatchReqId = optionalMatch.MatchRequestIds.Where(x => x != matchReqUpdate.matchReqId).FirstOrDefault();
+                var matchedUserDetails = matchManager.GetMatchedUserDetailsByMatchReqId(matchedMatchReqId);
 
-            if (result != null)
+                var result = SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, matchReqUpdate.matchReqId, matchedUserDetails);
                 return result;
+            }
 
             Log.Debug($"Optional match not found for match req: {matchReqUpdate.matchReqId}");
+
             var manager = MatchManager.GetManagerInstance();
             manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
+
             Log.Debug($"Match request id: {matchReqUpdate.matchReqId} location updated");
-            return result;
+            return null;
         }
 
         //Confirm optional match suggestion
@@ -127,22 +136,38 @@ namespace Socialize.Controllers
                 return;
             using (var db = ApplicationDbContext.Create())
             {
-                var userId = User.Identity.GetUserId();
-                //var userId = "1143afed-6abc-4ef4-b42e-894720979b3a";
-                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
+                //var userId = User.Identity.GetUserId();
+                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
+
+                //only for dev
+                var mail = "yossitrx@gmail.com";
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
+                var userId = user.Id;
 
                 if (user == null)
                     throw new Exception($"Can not find userId- {userId}");
 
-                var newFactors = updateUserData.Data;
-                var originalFactors = user.Factors ?? new List<Factor>();
+                var originalFactors = user.Factors;
+                var rawOriginalSubClasses = originalFactors.Select(x => x.SubClasses.ToArray());
+                
+                //TODO: delete subClasses from db
 
-                var unionFactors = originalFactors.Union(newFactors);
-                var distinctFactors = unionFactors.DistinctBy(x => x.Class + x.SubClasses).ToList();
+                db.Factors.RemoveRange(originalFactors);
 
-                db.Factors.AddRange(distinctFactors);
-                user.Factors = distinctFactors;
+                var factorToInsert = new List<Factor>();
+                foreach(var rawFactor in updateUserData.Data)
+                {
+                    var factor = new Factor()
+                    {
+                        Class = rawFactor.Class,
+                        SubClasses = rawFactor.SubClasses,
+                        UserId = userId
+                    };
 
+                    db.Factors.Add(factor);
+
+                    factorToInsert.Add(factor);
+                }
                 await db.SaveChangesAsync();
             }
         }
@@ -155,7 +180,49 @@ namespace Socialize.Controllers
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeUserData();
 
+            using(var db = ApplicationDbContext.Create())
+            {
+                //var userId = User.Identity.GetUserId();
+                //var user = db.Users.FirstOrDefault(x => x.Id == userId);
+
+                //only for dev
+                var mail = "yossitrx@gmail.com";
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
+
+                if (user == null)
+                    throw new Exception("user not found");
+
+                return new UserDataObj()
+                {
+                    Age = user.Age,
+                    FirstName = user.FirstName ?? "Moshe",
+                    LastName = user.LastName ?? "Levi",
+                    Id = user.Id,
+                    ImgUrl = user.ImgUrl ?? db.AvatarImgs.First().ImgUrl,
+                    Mail = user.Email,
+                    Premium = false,
+
+                    Factors = user.Factors?.ToArray()
+                };
+            }
+            
+
+
             throw new NotImplementedException();
+        }
+
+        public async Task<string> GetUserImgUrl()
+        {
+            if (FakeDataUtil.Fake)
+                return FakeDataUtil.FakeUserImgUrl();
+
+            using (var db = ApplicationDbContext.Create())
+            {
+                var userId = User.Identity.GetUserId();
+                var user = db.Users.FirstOrDefault(x => x.Id == userId);
+
+                return user != null ? user.ImgUrl : null;
+            }
         }
 
         //Get all the available factors for user registration
@@ -164,7 +231,7 @@ namespace Socialize.Controllers
         {
             Log.Debug($"GET GetAllSystemFactors calld");
             if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeFactors();
+                return FakeDataUtil.CreateFakeFactors(true);
 
             throw new NotImplementedException();
         }

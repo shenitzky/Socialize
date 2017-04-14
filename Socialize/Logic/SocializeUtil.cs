@@ -36,15 +36,17 @@ namespace Socialize.Logic
         }
 
         //convert from IoptionaMatch to OptinalMatchObj
-        public static OptinalMatchObj ConvertToOptinalMatchObj(IOptionalMatch source, int matchReqId)
+        public static OptinalMatchObj ConvertToOptinalMatchObj(IOptionalMatch source, int matchReqId, UserDataObj matchdDetails)
         {
+            
             return new OptinalMatchObj()
             {
                 Id = source.Id,
                 Created = source.Created,
                 MatchedFactors = source.MatchedFactors,
                 MatchRequestId = matchReqId,
-                MatchStrength = source.MatchStrength[matchReqId]
+                MatchStrength = source.MatchStrength[matchReqId],
+                MatchedDetails = matchdDetails
             };
         }
 

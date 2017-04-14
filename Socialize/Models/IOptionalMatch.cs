@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Socialize.Models.GetResponseObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +25,7 @@ namespace Socialize.Models
         List<int> MatchRequestIds { get; set; }
         // The factors that calculated in the optional match
         List<Factor> MatchedFactors { get; set; }
+
+        UserDataObj MatchedUser { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace Socialize.Models.GetResponseObjects
         public string Mail { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Description { get; set; }
+        public string[] Description { get; set; }
         public string ImgUrl { get; set; }
         public int Age { get; set; }
         public bool Premium { get; set; }

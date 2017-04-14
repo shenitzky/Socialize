@@ -254,9 +254,9 @@
     <Compile Include="Logic\OptionalMatchContainer.cs" />
     <Compile Include="Logic\SocializeUtil.cs" />
     <Compile Include="Logic\StartThreadHandler.cs" />
-    <Compile Include="Migrations\201704061222408_Initial.cs" />
-    <Compile Include="Migrations\201704061222408_Initial.Designer.cs">
-      <DependentUpon>201704061222408_Initial.cs</DependentUpon>
+    <Compile Include="Migrations\201704140737525_Initial.cs" />
+    <Compile Include="Migrations\201704140737525_Initial.Designer.cs">
+      <DependentUpon>201704140737525_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201704070902162_Initial1.cs" />
     <Compile Include="Migrations\201704070902162_Initial1.Designer.cs">
@@ -381,8 +381,8 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201704061222408_Initial.resx">
-      <DependentUpon>201704061222408_Initial.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201704140737525_Initial.resx">
+      <DependentUpon>201704140737525_Initial.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704070902162_Initial1.resx">
       <DependentUpon>201704070902162_Initial1.cs</DependentUpon>
