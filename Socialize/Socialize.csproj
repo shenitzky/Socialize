@@ -297,6 +297,12 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Images\Factors\games.png" />
+    <Content Include="Content\Images\Icons\history.svg" />
+    <Content Include="Content\Images\Icons\logo.png" />
+    <Content Include="Content\Images\Icons\match.svg" />
+    <Content Include="Content\Images\Icons\notifications.svg" />
+    <Content Include="Content\Images\Icons\userProfile.svg" />
+    <Content Include="Content\Images\Icons\v.png" />
     <Content Include="Content\Images\Profiles\profile1.png" />
     <Content Include="Content\Images\Profiles\profile2.png" />
     <Content Include="Content\Images\Profiles\profile3.png" />
@@ -304,6 +310,9 @@
     <Content Include="Content\Images\Profiles\profile5.png" />
     <Content Include="Content\Images\Profiles\profile6.png" />
     <Content Include="Content\Images\Profiles\profile7.png" />
+    <Content Include="dist\app.bundle.js" />
+    <Content Include="dist\index.html" />
+    <Content Include="dist\vendor.bundle.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -316,6 +325,8 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dist\app.bundle.js.map" />
+    <Content Include="dist\vendor.bundle.js.map" />
     <None Include="Properties\PublishProfiles\Socialize20170306063515 - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\Socialize20170313122446 - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />

@@ -4,6 +4,7 @@ using Socialize.Models;
 using Socialize.Models.GetResponseObjects;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -100,7 +101,7 @@ namespace Socialize.Logic
             using(var db = ApplicationDbContext.Create())
             {
                 var matchReq = MatchReqContainer.GetMatchReqById(matchReqId);
-                var user = db.Users.FirstOrDefault(x => x.Id == matchReq.MatchOwner);
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == matchReq.MatchOwner);
 
                 var desc = new string[] { };
                 if(user.Factors != null && user.Factors.Count > 0)
@@ -108,12 +109,12 @@ namespace Socialize.Logic
                     var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
                     desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
                 }
-                
 
+                var splitedMail = user.Email.Split('@');
                 return new UserDataObj()
                 {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
+                    FirstName = user.FirstName ?? splitedMail[0],
+                    LastName = user.LastName ?? splitedMail[1],
 
                     ImgUrl = user.ImgUrl,
                     Age = user.Age,
