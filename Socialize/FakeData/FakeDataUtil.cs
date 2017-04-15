@@ -112,7 +112,8 @@ namespace Socialize.FakeData
             return new FinalMatchObj()
             {
                 Locations = new List<Location>() { new Location() { lat = 31.8962843, lng = 34.8148716}, new Location() { lat = 31.8962844, lng = 34.8148712} },
-                MatchStrength = 98
+                MatchStrength = 98,
+                IsAccepted = true
             };
                 
         }
@@ -156,7 +157,7 @@ namespace Socialize.FakeData
                                 new SubClass() { Name = "Baking", ImgUrl = imgUrl },
                                 new SubClass() { Name = "Fishing", ImgUrl = imgUrl},
                                 new SubClass() { Name = "Cleaning", ImgUrl = imgUrl },
-                                new SubClass() { Name = "Fishing", ImgUrl = imgUrl },
+                                new SubClass() { Name = "Fishing2", ImgUrl = imgUrl },
                                 new SubClass() { Name = "Fishing5", ImgUrl = imgUrl }
                             }
                         },

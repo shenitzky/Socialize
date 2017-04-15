@@ -150,5 +150,13 @@ namespace Socialize.Logic
                 throw new MissingMatchRequestIdException($"match request id: {matchReqId} was not found");
             }
         }
+
+        //Get Match request by ownerId return -1 if not found
+        public int GetMatchReqIdByOwner(string userId)
+        {
+            var match = MatchRequests.FirstOrDefault(x => x.Value.MatchOwner == userId);
+
+            return match.Value != null ? match.Value.Id : -1;
+        }
     }
 }

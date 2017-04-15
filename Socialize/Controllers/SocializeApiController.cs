@@ -120,14 +120,17 @@ namespace Socialize.Controllers
 
             if(finalMatch != null)
             {
-                manager.SetFinalMatchReceivedForOptionalMatch(optionalMatchId, matchReqId);
-
-                if (manager.CheckIfFinalMatchReceived(optionalMatchId))
+                if (finalMatch.IsAccepted)
                 {
-                    await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
+                    manager.SetFinalMatchReceivedForOptionalMatch(optionalMatchId, matchReqId);
+                    //Remove the match requests in case both sides receive a final match
+                    if (manager.CheckIfFinalMatchReceived(optionalMatchId))
+                    {
+                        await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
+                    }            
                 }
-                
                 return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
+
             }
             return null;
         }
@@ -190,11 +193,7 @@ namespace Socialize.Controllers
             using(var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
-                var user = db.Users.FirstOrDefault(x => x.Id == userId);
-
-                //only for dev
-                //var mail = "yossitrx@gmail.com";
-                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Id == userId);
 
                 if (user == null)
                     throw new Exception("user not found");
@@ -218,6 +217,18 @@ namespace Socialize.Controllers
             throw new NotImplementedException();
         }
 
+        //Get user pending optional match
+        [HttpGet]
+        public async Task<IOptionalMatch> GetUserOptionalMatch()
+        {
+            var userId = User.Identity.GetUserId();
+            var manager = MatchManager.GetManagerInstance();
+
+            return manager.GetOptionalMatchByOwnerId(userId);
+        }
+
+        //Get conected user img url
+        [HttpGet]
         public async Task<string> GetUserImgUrl()
         {
             if (FakeDataUtil.Fake)
@@ -240,15 +251,18 @@ namespace Socialize.Controllers
             if (FakeDataUtil.Fake)
                 return FakeDataUtil.CreateFakeFactors(true);
 
+            return FakeDataUtil.CreateFakeFactors(true);
             throw new NotImplementedException();
         }
 
+        //Log out 
         [HttpGet]
         public void Logoff()
         {
             var AutheticationManager = HttpContext.Current.GetOwinContext().Authentication;
             AutheticationManager.SignOut();
         }
+
 
         [HttpGet]
         public async Task AddAvatarImg()

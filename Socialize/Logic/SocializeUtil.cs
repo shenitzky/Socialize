@@ -55,8 +55,9 @@ namespace Socialize.Logic
         {
             return new FinalMatchObj()
             {
-                Locations = ConvertLocationStringToLocationsList(source.Locations),
-                MatchStrength = source.MatchStrength[matchReqId]
+                IsAccepted = source.IsAccepted,
+                Locations = source.Locations != null ? ConvertLocationStringToLocationsList(source.Locations) : null,
+                MatchStrength = source.MatchStrength != null ? source.MatchStrength[matchReqId] : 0
             };
         }
 

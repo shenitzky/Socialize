@@ -159,8 +159,34 @@ namespace Socialize.Logic
         public FinalMatch CheckOptionalMatchStatus(int optionalMatchId)
         {
             var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
-        
-            return optionalMatch != null ? BuildFinalMatch(optionalMatch) : null;
+
+            //Check if one of the sides decline the optional match
+            if(optionalMatch == null)
+            {
+                return BuildDeclinedFinalMatch();
+            }
+            //Check if still waiting for one of the sides to respond
+            else if(!optionalMatch.Status.Any(x => !x.Value))
+            {
+                return null;
+            }
+            //optional match accepted by all sides  
+            return BuildFinalMatch(optionalMatch);
+        }
+
+        //Get optional match by owner id
+        public IOptionalMatch GetOptionalMatchByOwnerId(string userId)
+        {
+            var matchReqId = MatchReqContainer.GetMatchReqIdByOwner(userId);
+            return matchReqId != -1 ? OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId) : null;
+        }
+
+        private FinalMatch BuildDeclinedFinalMatch()
+        {
+            return new FinalMatch()
+            {
+                IsAccepted = false
+            };
         }
 
         private FinalMatch BuildFinalMatch(IOptionalMatch optionalMatch)
@@ -189,6 +215,7 @@ namespace Socialize.Logic
 
                 return finalMatch;
             }
+
         }
     }
 }

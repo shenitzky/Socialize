@@ -10,7 +10,8 @@ namespace Socialize.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            return File(Server.MapPath("/dist/") + "index.html", "text/html");
+            //return View();
         }
 
         public ActionResult About()

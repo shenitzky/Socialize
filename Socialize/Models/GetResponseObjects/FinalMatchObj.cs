@@ -10,5 +10,7 @@ namespace Socialize.Models.GetResponseObjects
         public int MatchStrength { get; set; }
 
         public List<Location> Locations { get; set; }
+
+        public bool IsAccepted { get; set; }
     }
 }
