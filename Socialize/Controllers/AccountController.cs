@@ -9,10 +9,12 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Socialize.Models;
+using System.Web.Http.Cors;
 
 namespace Socialize.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
+   // [EnableCors("*","*","*")]
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
@@ -61,11 +63,50 @@ namespace Socialize.Controllers
             return View();
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<ActionResult> AjaxLogin(LoginViewModel model, string returnUrl)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage ?? x.Exception?.Message);
+                var errorString = string.Join("\n", errors);
+
+                return Json(new { Error = errorString });
+            }
+
+            // This doesn't count login failures towards account lockout
+            // To enable password failures to trigger account lockout, change to shouldLockout: true
+            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            switch (result)
+            {
+                case SignInStatus.Success:
+
+                    //if (returnUrl == null)
+                    //{
+                    //    var siteContext = SiteContext.SiteContextHelper.ResolveContextForEmail(model.Email, null);
+                    //    returnUrl = siteContext.SignedInUrl;
+                    //}
+
+                    return Json(new { RedirectUrl = returnUrl });
+                case SignInStatus.LockedOut:
+                    throw new NotImplementedException("Lockout");
+
+                case SignInStatus.RequiresVerification:
+                    throw new NotImplementedException("RequiresVerification");
+                //return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+
+                case SignInStatus.Failure:
+                default:
+                    return Json(new { Error = "Incorrect Email or Password" });
+            }
+        }
+
         //
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
@@ -108,7 +149,7 @@ namespace Socialize.Controllers
         // POST: /Account/VerifyCode
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
         {
             if (!ModelState.IsValid)
@@ -134,6 +175,45 @@ namespace Socialize.Controllers
             }
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<ActionResult> AjaxRegister(RegisterViewModel model)
+        {
+            using (var db = ApplicationDbContext.Create())
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage ?? x.Exception?.Message);
+                    var errorString = string.Join("\n", errors);
+
+                    return Json(new { Error = errorString });
+                }
+
+                var user = new ApplicationUser { Email = model.Email, UserName = model.Email };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
+                    // Send an email with this link
+                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                else
+                {
+                    //AddErrors(result);
+                    var errorString = string.Join("\n", result.Errors);
+                    return Json(new { Error = errorString });
+                }
+            }
+
+        }
+
         //
         // GET: /Account/Register
         [AllowAnonymous]
@@ -146,7 +226,7 @@ namespace Socialize.Controllers
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)

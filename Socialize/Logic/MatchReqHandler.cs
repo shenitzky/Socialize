@@ -4,6 +4,7 @@ using Socialize.Exeptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Socialize.Logic
@@ -22,8 +23,9 @@ namespace Socialize.Logic
      */
     public class MatchReqHandler
     {
+        public delegate Task EventHandler(object e, OptionalMatchEventArgs args);
         //Delegete function which the matchManager subscribed to
-        public event EventHandler<OptionalMatchEventArgs> OptionalMatchFound;
+        public event EventHandler OptionalMatchFound;
 
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -76,7 +78,7 @@ namespace Socialize.Logic
             }
         }
 
-        public void SendMatchReqToFindMatch()
+        public async Task SendMatchReqToFindMatch()
         {
             var nextMatchReq = ReqContainerInstance.GetNextMatchRequest();
             if (nextMatchReq == null) return;
@@ -109,7 +111,7 @@ namespace Socialize.Logic
                         }
                     }
                 }
-                ReqContainerInstance.RestoreMatchReq(nextMatchReq.Id);
+                await ReqContainerInstance.RestoreMatchReq(nextMatchReq.Id);
             }
         }
     }

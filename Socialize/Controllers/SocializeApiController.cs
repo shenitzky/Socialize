@@ -42,7 +42,7 @@ namespace Socialize.Controllers
                 matchReq.MatchOwner = userId;
 
                 var matchManager = MatchManager.GetManagerInstance();
-                matchManager.CreateMatchRequest(matchReq);
+                await matchManager.CreateMatchRequest(matchReq);
 
                 return matchReq.Id;
             }
@@ -75,7 +75,7 @@ namespace Socialize.Controllers
             Log.Debug($"Optional match not found for match req: {matchReqUpdate.matchReqId}");
 
             var manager = MatchManager.GetManagerInstance();
-            manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
+            await manager.UpdateMatchRequest(matchReqUpdate.matchReqId, matchReqUpdate.location);
 
             Log.Debug($"Match request id: {matchReqUpdate.matchReqId} location updated");
             return null;
@@ -117,9 +117,16 @@ namespace Socialize.Controllers
 
             var manager = MatchManager.GetManagerInstance();
             var finalMatch = manager.CheckOptionalMatchStatus(optionalMatchId);
+
             if(finalMatch != null)
             {
-                manager.RemoveMatchRequest(matchReqId);
+                manager.SetFinalMatchReceivedForOptionalMatch(optionalMatchId, matchReqId);
+
+                if (manager.CheckIfFinalMatchReceived(optionalMatchId))
+                {
+                    await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
+                }
+                
                 return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
             }
             return null;
@@ -136,13 +143,13 @@ namespace Socialize.Controllers
                 return;
             using (var db = ApplicationDbContext.Create())
             {
-                //var userId = User.Identity.GetUserId();
-                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
+                var userId = User.Identity.GetUserId();
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
 
                 //only for dev
-                var mail = "yossitrx@gmail.com";
-                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
-                var userId = user.Id;
+                //var mail = "yossitrx@gmail.com";
+                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
+                //var userId = user.Id;
 
                 if (user == null)
                     throw new Exception($"Can not find userId- {userId}");
@@ -182,12 +189,12 @@ namespace Socialize.Controllers
 
             using(var db = ApplicationDbContext.Create())
             {
-                //var userId = User.Identity.GetUserId();
-                //var user = db.Users.FirstOrDefault(x => x.Id == userId);
+                var userId = User.Identity.GetUserId();
+                var user = db.Users.FirstOrDefault(x => x.Id == userId);
 
                 //only for dev
-                var mail = "yossitrx@gmail.com";
-                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
+                //var mail = "yossitrx@gmail.com";
+                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
 
                 if (user == null)
                     throw new Exception("user not found");
@@ -235,6 +242,37 @@ namespace Socialize.Controllers
 
             throw new NotImplementedException();
         }
+
+        [HttpGet]
+        public void Logoff()
+        {
+            var AutheticationManager = HttpContext.Current.GetOwinContext().Authentication;
+            AutheticationManager.SignOut();
+        }
+
+        [HttpGet]
+        public async Task AddAvatarImg()
+        {
+            using (var db = ApplicationDbContext.Create())
+            {
+                var all = db.AvatarImgs.Select(x => x);
+
+                db.AvatarImgs.RemoveRange(all);
+
+                var domain = HttpContext.Current.Request.Url.Authority;
+                var imgUrl = $"{domain}/Content/Images/Profiles/profile";
+
+                for (var i = 1; i <= 7; i++)
+                {
+                    var imageToiInsert = new AvatarImg() { ImgUrl = imgUrl + i + ".png" };
+                    db.AvatarImgs.Add(imageToiInsert);
+                }
+
+                await db.SaveChangesAsync();
+
+            }
+        }
+
 
         [HttpGet]
         public async Task<List<int>> Test()
@@ -293,28 +331,7 @@ namespace Socialize.Controllers
 
         }
 
-        [HttpGet]
-        public async Task AddAvatarImg()
-        {
-            using (var db = ApplicationDbContext.Create())
-            {
-                var all = db.AvatarImgs.Select(x => x);
-
-                db.AvatarImgs.RemoveRange(all);
-
-                var domain = HttpContext.Current.Request.Url.Authority;
-                var imgUrl = $"{domain}/Content/Images/Profiles/profile";
-
-                for (var i = 1; i <= 7; i++)
-                {
-                    var imageToiInsert = new AvatarImg() { ImgUrl = imgUrl + i + ".png" };
-                    db.AvatarImgs.Add(imageToiInsert);
-                }
-
-                await db.SaveChangesAsync();
-
-            }
-        }
+        
 
         [HttpGet]
         public async Task Test4()
@@ -472,17 +489,21 @@ namespace Socialize.Controllers
 
             var first = new MatchRequest();
             first.MatchReqDetails = firstReq;
+            first.MatchOwner = "71b9ca3f-a85e-40db-a7f3-c4c3373a46b5";
             var sec = new MatchRequest();
             sec.MatchReqDetails = secReq;
+            sec.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
             var third = new MatchRequest();
             third.MatchReqDetails = thirdReq;
+            third.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
             var fourth = new MatchRequest();
             fourth.MatchReqDetails = fourthReq;
+            fourth.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
 
-            manager.CreateMatchRequest(first);
-            manager.CreateMatchRequest(third);
-            manager.CreateMatchRequest(sec);
-            manager.CreateMatchRequest(fourth);
+            await manager.CreateMatchRequest(first);
+            await manager.CreateMatchRequest(third);
+            await manager.CreateMatchRequest(sec);
+            await manager.CreateMatchRequest(fourth);
         }
 
 
@@ -523,7 +544,7 @@ namespace Socialize.Controllers
                     }
             };
             first.MatchReqDetails = firstReq;
-            manager.CreateMatchRequest(first);
+            await manager.CreateMatchRequest(first);
         }
     }
 }

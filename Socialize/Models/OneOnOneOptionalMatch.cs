@@ -18,7 +18,7 @@ namespace Socialize.Models
         public List<int> MatchRequestIds { get; set; }
         public Dictionary<int, int> MatchStrength { get; set; }
         public Dictionary<int, bool> Status { get; set; }
-
+        public Dictionary<int, bool> FinalMatchReceivedStatus { get; set; }
         public UserDataObj MatchedUser { get; set; }
     }
 }

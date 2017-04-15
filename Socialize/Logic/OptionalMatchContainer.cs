@@ -67,6 +67,29 @@ namespace Socialize.Logic
         {
             return OptionalMatches.ContainsKey(optionalMatchId) ? OptionalMatches[optionalMatchId] : null;
         }
+        //Update final match received for match id
+        public void SetFinalMatchReceivedForOptionalMatch(int optionalMatchId, int matchReqId)
+        {
+            Log.Debug($"Set final match Received for optionalMatch id={optionalMatchId} and match req id= {matchReqId}");
+
+            if (OptionalMatches.ContainsKey(optionalMatchId))
+            {
+                OptionalMatches[optionalMatchId].FinalMatchReceivedStatus[matchReqId] = true;
+                return;
+            }
+            throw new MissingOptionalMatchException($"Can not find optional match id: {optionalMatchId}");
+        }
+        //Check if final match received for each user
+        public bool CheckIfFinalMatchReceived(int optionalMatchId)
+        {
+
+            if (OptionalMatches.ContainsKey(optionalMatchId))
+            {
+                return !OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.Any(x => !x.Value ); 
+                
+            }
+            throw new MissingOptionalMatchException($"Can not find optional match id: {optionalMatchId}");
+        }
 
         //Update optional match with user accepte/decline by match request id
         public void UpdateOptionalMatch(int optionalMatchId, int matchReqId, bool status)

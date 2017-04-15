@@ -27,7 +27,12 @@ namespace Socialize.Logic
                 //Set both match req ids status to false by default
                 Status = new Dictionary<int, bool>() {
                     { first.Id, false }, { sec.Id, false}
+                },
+                //Set both final match received for match req ids status to false by default
+                FinalMatchReceivedStatus = new Dictionary<int, bool>() {
+                    { first.Id, false }, { sec.Id, false}
                 }
+
             };
         }
     }

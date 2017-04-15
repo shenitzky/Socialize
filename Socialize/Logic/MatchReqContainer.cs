@@ -5,6 +5,7 @@ using Socialize.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Socialize.Logic
@@ -36,7 +37,7 @@ namespace Socialize.Logic
         }
 
         // Add new match request to the dictionary and the q
-        public void AddNewMatchReq(MatchRequest matchReq)
+        public async Task AddNewMatchReq(MatchRequest matchReq)
         {
             var parseObj = JsonConvert.SerializeObject(matchReq);
             Log.Debug($"Add new match request {parseObj}");
@@ -45,7 +46,7 @@ namespace Socialize.Logic
         }
 
         //Update specific match request by id with new location
-        public void UpdateMatchReq(int matchReqId, Location location)
+        public async Task UpdateMatchReq(int matchReqId, Location location)
         {
             var parseObj = JsonConvert.SerializeObject(location);
             Log.Debug($"Update match request {matchReqId} with {parseObj}");
@@ -61,7 +62,7 @@ namespace Socialize.Logic
         }
 
         //Remove specific match request from the dictionary only
-        public void RemoveMatchReq(int matchReqId)
+        public async Task RemoveMatchReq(int matchReqId)
         {
             Log.Debug($"Remove match request {matchReqId}");
             if (MatchRequests.ContainsKey(matchReqId))
@@ -75,7 +76,7 @@ namespace Socialize.Logic
         }
 
         //Suspend match request in case optional match found
-        public void SuspendMatchReq(int matchReqId)
+        public async Task SuspendMatchReq(int matchReqId)
         {
             Log.Debug($"Suspend match request {matchReqId}");
             if (MatchRequests.ContainsKey(matchReqId))
@@ -89,13 +90,13 @@ namespace Socialize.Logic
         }
 
         //Restore match request in case optional match declined
-        public void RestoreMatchReq(int matchReqId)
+        public async Task RestoreMatchReq(int matchReqId)
         {
             Log.Debug($"Restore match request {matchReqId}");
             if (MatchRequests.ContainsKey(matchReqId))
             {
                 MatchRequests[matchReqId].WaitForOptionalMatchRes = false;
-                RequestsQ.Enqueue(matchReqId);
+                await RepositionMatchReq(matchReqId);
             }
             else
             {
@@ -124,7 +125,7 @@ namespace Socialize.Logic
         }
 
         //Re-enter match request to the end of the queue
-        public void RepositionMatchReq(int matchReqId)
+        public async Task RepositionMatchReq(int matchReqId)
         {
             Log.Debug($"Reposition match request {matchReqId} on the Q");
             if (MatchRequests.ContainsKey(matchReqId))

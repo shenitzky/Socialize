@@ -5,6 +5,7 @@ using Socialize.Models.GetResponseObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Socialize.Logic
@@ -37,16 +38,16 @@ namespace Socialize.Logic
         }
 
         //Add new match request to the match request container
-        public void CreateMatchRequest(MatchRequest matchReq)
+        public async Task CreateMatchRequest(MatchRequest matchReq)
         {
-            MatchReqContainer.AddNewMatchReq(matchReq);
+            await MatchReqContainer.AddNewMatchReq(matchReq);
         }
 
 
         //update match request location by id in the container
-        public void UpdateMatchRequest(int matchReqId, Location newLocation)
+        public async Task UpdateMatchRequest(int matchReqId, Location newLocation)
         {
-            MatchReqContainer.UpdateMatchReq(matchReqId, newLocation);
+            await MatchReqContainer.UpdateMatchReq(matchReqId, newLocation);
         }
 
         //Check if found optional match or if timeout occured
@@ -59,11 +60,18 @@ namespace Socialize.Logic
             }
             return null;
         }
+        //Remove all match requests of specific optional match
+        public async Task RemoveMatchRequestsByOptionalMatchId(int optionalMatchId)
+        {
+            var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
+            await RemoveMatchRequest(optionalMatch.MatchRequestIds.First());
+            await RemoveMatchRequest(optionalMatch.MatchRequestIds.Last());
+        }
 
         //Check if found optional match or if timeout occured
-        public void RemoveMatchRequest(int matchReqId)
+        public async Task RemoveMatchRequest(int matchReqId)
         {
-            MatchReqContainer.RemoveMatchReq(matchReqId);
+            await MatchReqContainer.RemoveMatchReq(matchReqId);
         }
 
         //Accept (status = true ) or decline (status = false) optional match offer
@@ -86,6 +94,7 @@ namespace Socialize.Logic
             }
         }
 
+        //Get Matched User Details By Match Req Id for optional match
         public UserDataObj GetMatchedUserDetailsByMatchReqId(int matchReqId)
         {
             using(var db = ApplicationDbContext.Create())
@@ -93,8 +102,13 @@ namespace Socialize.Logic
                 var matchReq = MatchReqContainer.GetMatchReqById(matchReqId);
                 var user = db.Users.FirstOrDefault(x => x.Id == matchReq.MatchOwner);
 
-                var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
-                var desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+                var desc = new string[] { };
+                if(user.Factors != null && user.Factors.Count > 0)
+                {
+                    var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
+                    desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+                }
+                
 
                 return new UserDataObj()
                 {
@@ -110,9 +124,20 @@ namespace Socialize.Logic
             
 
         }
+        //Update final match received for match id
+        public void SetFinalMatchReceivedForOptionalMatch(int optionalMatchId, int matchReqId)
+        {
+            OptionalMatchContainer.SetFinalMatchReceivedForOptionalMatch(optionalMatchId, matchReqId);
+        }
+
+        //Check if final match received for each user
+        public bool CheckIfFinalMatchReceived(int optionalMatchId)
+        {
+            return OptionalMatchContainer.CheckIfFinalMatchReceived(optionalMatchId);
+        }
 
         //Invoked Event function, create optional match and add to optional container, and suspends Match requests
-        public void OnOptionalMatchFound(object source, OptionalMatchEventArgs args)
+        public async Task OnOptionalMatchFound(object source, OptionalMatchEventArgs args)
         {
             var parseObj = JsonConvert.SerializeObject(args.results);
             Log.Debug($"Creating optional match object with results{parseObj}");
@@ -120,8 +145,8 @@ namespace Socialize.Logic
             var firstId = args.results.First().Key;
             var secId = args.results.Last().Key;
 
-            MatchReqContainer.SuspendMatchReq(firstId);
-            MatchReqContainer.SuspendMatchReq(secId);
+            await MatchReqContainer.SuspendMatchReq(firstId);
+            await MatchReqContainer.SuspendMatchReq(secId);
 
             var firstMatchReq = MatchReqContainer.GetMatchReqById(firstId);
             var secMatchReq = MatchReqContainer.GetMatchReqById(secId);

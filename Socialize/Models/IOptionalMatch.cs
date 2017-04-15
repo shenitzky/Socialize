@@ -19,6 +19,9 @@ namespace Socialize.Models
         // Status of the optional match - 
         // for each match request id (int) define if the optional match accepted or declined (bool)
         Dictionary<int, bool> Status { get; set; }
+        // Status of the optional match -
+        // for each match request id (int) define if the final match received(bool)
+        Dictionary<int, bool> FinalMatchReceivedStatus { get; set; }
         // The strength of the optional match for each participant
         Dictionary<int, int> MatchStrength { get; set; }
         // The Id of each match request that take part in the optional match suggestion
