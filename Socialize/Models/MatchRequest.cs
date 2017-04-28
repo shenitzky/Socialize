@@ -17,6 +17,8 @@ namespace Socialize.Models
         public string MatchOwner { get; set; }
         // Time and date when the request created
         public DateTime Created { get; set; }
+        // Time and date when the request location updated
+        public DateTime Updated { get; set; }
         // Type of the Match - one on one match / party
         public MatchType MatchType { get; set; }
         // Factores the should be calculated in order to find match
@@ -29,6 +31,7 @@ namespace Socialize.Models
             this.Id = SocializeUtil.GeneratId();
             this.WaitForOptionalMatchRes = false;
             this.Created = DateTime.Now;
+            this.Updated = DateTime.Now;
 
             //default one on one match request - BETA
             this.MatchType = MatchType.ONE_TO_ONE;

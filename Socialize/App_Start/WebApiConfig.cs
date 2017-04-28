@@ -12,8 +12,6 @@ namespace Socialize.App_Start
     {
         public static void Register(HttpConfiguration config)
         {
-            // TODO: Add any additional configuration code.
-
             // Web API routes
             config.MapHttpAttributeRoutes();
 

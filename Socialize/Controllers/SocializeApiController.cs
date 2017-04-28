@@ -16,6 +16,7 @@ using log4net;
 using Newtonsoft.Json;
 using System.Data.Entity;
 using System.Web;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace Socialize.Controllers
 {
@@ -28,11 +29,11 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
+            if (FakeDataUtil.Fake)
+                await SignInDefaultUser();
+
             var parseObj = JsonConvert.SerializeObject(newMatchReq);
             Log.Debug($"POST CreateMatcReq calld with match details {parseObj}");
-            if (FakeDataUtil.Fake)
-                return 1;
-
             using (var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
@@ -54,9 +55,6 @@ namespace Socialize.Controllers
         {
             var parseObj = JsonConvert.SerializeObject(matchReqUpdate);
             Log.Debug($"POST UpdateAndCheckMatcReq calld with updates {parseObj}");
-
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeOptionalMatch();
 
             var matchManager = MatchManager.GetManagerInstance();
             var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqUpdate.matchReqId);
@@ -87,8 +85,6 @@ namespace Socialize.Controllers
         {
             var parseObj = JsonConvert.SerializeObject(ids);
             Log.Debug($"POST AcceptOptionalMatch calld with OptionalMatchIdAndMatchReqIdObj object {parseObj}");
-            if (FakeDataUtil.Fake)
-                return;
 
             var manager = MatchManager.GetManagerInstance();
             manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, true);
@@ -100,8 +96,6 @@ namespace Socialize.Controllers
         {
             var parseObj = JsonConvert.SerializeObject(ids);
             Log.Debug($"POST DeclineOptionalMatch calld with id object {parseObj}");
-            if (FakeDataUtil.Fake)
-                return;
 
             var manager = MatchManager.GetManagerInstance();
             manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, false);
@@ -112,23 +106,33 @@ namespace Socialize.Controllers
         public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId, int matchReqId)
         {
             Log.Debug($"GET CheckOptionalMatchStatus calld with id {optionalMatchId}");
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeFinalMatch();
 
             var manager = MatchManager.GetManagerInstance();
+            //Remove the optional match in case it alive more then 20 sec
+            if (manager.IsOptionalMatchDeprecate(optionalMatchId))
+            {
+                await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
+                manager.RemoveOptionalMatchById(optionalMatchId);
+                return null;
+            }
+
             var finalMatch = manager.CheckOptionalMatchStatus(optionalMatchId);
+
+
 
             if(finalMatch != null)
             {
                 if (finalMatch.IsAccepted)
                 {
                     manager.SetFinalMatchReceivedForOptionalMatch(optionalMatchId, matchReqId);
-                    //Remove the match requests in case both sides receive a final match
+                    //Remove the match requests and optional match in case both sides receive a final match
                     if (manager.CheckIfFinalMatchReceived(optionalMatchId))
                     {
                         await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
+                        manager.RemoveOptionalMatchById(optionalMatchId);
                     }            
                 }
+
                 return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
 
             }
@@ -139,23 +143,17 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task UpdateUserData(UpdateUserObj updateUserData)
         {
+            if (FakeDataUtil.Fake)
+                await SignInDefaultUser();
+
             var parseObj = JsonConvert.SerializeObject(updateUserData);
             Log.Debug($"POST UpdateUserData calld with user object {parseObj}");
 
-            if (FakeDataUtil.Fake)
-                return;
             using (var db = ApplicationDbContext.Create())
             {
+                
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
-
-                //only for dev
-                //var mail = "yossitrx@gmail.com";
-                //var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Email == mail);
-                //var userId = user.Id;
-
-                if (user == null)
-                    throw new Exception($"Can not find userId- {userId}");
 
                 var originalFactors = user.Factors;
                 var rawOriginalSubClasses = originalFactors.Select(x => x.SubClasses.ToArray());
@@ -186,41 +184,48 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<UserDataObj> GetUserData()
         {
-            Log.Debug($"GET GetUserData calld");
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeUserData();
-
-            using(var db = ApplicationDbContext.Create())
+            try
             {
-                var userId = User.Identity.GetUserId();
-                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Id == userId);
+                if (FakeDataUtil.Fake)
+                    await SignInDefaultUser();
 
-                if (user == null)
-                    throw new Exception("user not found");
-
-                return new UserDataObj()
+                Log.Debug($"GET GetUserData calld");
+                using (var db = ApplicationDbContext.Create())
                 {
-                    Age = user.Age,
-                    FirstName = user.FirstName ?? "Moshe",
-                    LastName = user.LastName ?? "Levi",
-                    Id = user.Id,
-                    ImgUrl = user.ImgUrl ?? db.AvatarImgs.First().ImgUrl,
-                    Mail = user.Email,
-                    Premium = false,
+                    var userId = User.Identity.GetUserId();
+                    var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Id == userId);
 
-                    Factors = user.Factors?.ToArray()
-                };
+                    if (user == null)
+                        throw new Exception("user not found");
+
+                    return new UserDataObj()
+                    {
+                        Age = user.Age,
+                        FirstName = user.FirstName ?? "Moshe",
+                        LastName = user.LastName ?? "Levi",
+                        Id = user.Id,
+                        ImgUrl = user.ImgUrl ?? db.AvatarImgs.First().ImgUrl,
+                        Mail = user.Email,
+                        Premium = false,
+
+                        Factors = user.Factors?.ToArray()
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
             }
             
-
-
-            throw new NotImplementedException();
         }
 
         //Get user pending optional match
         [HttpGet]
         public async Task<IOptionalMatch> GetUserOptionalMatch()
         {
+            if (FakeDataUtil.Fake)
+                await SignInDefaultUser();
+
             var userId = User.Identity.GetUserId();
             var manager = MatchManager.GetManagerInstance();
 
@@ -231,11 +236,11 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<string> GetUserImgUrl()
         {
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.FakeUserImgUrl();
-
             using (var db = ApplicationDbContext.Create())
             {
+                if (FakeDataUtil.Fake)
+                    await SignInDefaultUser();
+
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.FirstOrDefault(x => x.Id == userId);
 
@@ -248,11 +253,7 @@ namespace Socialize.Controllers
         public async Task<Factor[]> GetAllSystemFactors()
         {
             Log.Debug($"GET GetAllSystemFactors calld");
-            if (FakeDataUtil.Fake)
-                return FakeDataUtil.CreateFakeFactors(true);
-
             return FakeDataUtil.CreateFakeFactors(true);
-            throw new NotImplementedException();
         }
 
         //Log out 
@@ -274,7 +275,7 @@ namespace Socialize.Controllers
                 db.AvatarImgs.RemoveRange(all);
 
                 var domain = HttpContext.Current.Request.Url.Authority;
-                var imgUrl = $"{domain}/Content/Images/Profiles/profile";
+                var imgUrl = $"http://{domain}/Content/Images/Profiles/profile";
 
                 for (var i = 1; i <= 7; i++)
                 {
@@ -287,51 +288,49 @@ namespace Socialize.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task SignInDefaultUser()
+        {
+            using(var db = ApplicationDbContext.Create())
+            {
+                var userMail = "nodler@gmail.com";
+                var user = db.Users.FirstOrDefault(x => x.Email == userMail);
+
+                var AutheticationManager = HttpContext.Current.GetOwinContext().Authentication;
+
+                var userManager = HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                var claimsIdentity = userManager.CreateIdentity(user, DefaultAuthenticationTypes.ApplicationCookie);
+
+                AutheticationManager.SignIn(new Microsoft.Owin.Security.AuthenticationProperties { IsPersistent = true }, claimsIdentity);
+            }
+        }
+
 
         [HttpGet]
-        public async Task<List<int>> Test()
+        public async Task<object> Test(int index)
         {
-
+            switch (index)
+            {
+                case 0:
+                    return FakeDataUtil.CreateFakeFactors(false);
+                    break;
+                case 1:
+                    return FakeDataUtil.CreateFakeFactorsWithoutUrl();
+                    break;
+                case 2:
+                    return FakeDataUtil.CreateFakeFinalMatch();
+                    break;
+                case 3:
+                    return FakeDataUtil.CreateFakeOptionalMatch();
+                    break;
+                case 4:
+                    return FakeDataUtil.CreateFakeUserData();
+                    break;
+                case 5:
+                    return FakeDataUtil.FakeUserImgUrl();
+                    break;
+            }
             return null;
-            //var firstReq = new MatchReqDetails()
-            //{
-            //    Location = new Location() { lat = 1.1, lng = 0.1 },
-            //    MatchFactors = new List<Factor>()
-            //   {
-            //       new Factor()
-            //       {
-            //           Class = "XXX",
-            //           SubClasses = new List<string>() { "YYYY" }
-            //       },
-            //       new Factor()
-            //       {
-            //           Class = "ZZZZ",
-            //           SubClasses = new List<string>() { "TTTTT" }
-            //       }
-            //   }
-            //};
-            //var secReq = new MatchReqDetails()
-            //{
-            //    Location = new Location() { lat = 1.1, lng = 0.1 },
-            //    MatchFactors = new List<Factor>()
-            //   {
-            //       new Factor()
-            //       {
-            //           Class = "XXX",
-            //           SubClasses = new List<string>() { "YYYY" }
-            //       },
-            //       new Factor()
-            //       {
-            //           Class = "ZZZZ",
-            //           SubClasses = new List<string>() { "TTTTT" }
-            //       }
-            //   }
-            //};
-
-            //var firstId = await CreateMatcReq(firstReq);
-            //var secId = await CreateMatcReq(secReq);
-
-            //return new List<int>() { firstId, secId };
         }
 
 

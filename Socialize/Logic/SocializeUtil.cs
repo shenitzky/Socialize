@@ -77,5 +77,27 @@ namespace Socialize.Logic
 
             return new List<Location>() { firstLocObj, secLocObj };
         }
+
+        public static string RandomAvatarImg()
+        {
+            using(var db = ApplicationDbContext.Create())
+            {
+                var allImages = db.AvatarImgs.ToList();
+
+                var randomNum = new Random().Next(0, allImages.Count);
+                var img = allImages[randomNum];
+
+                return img.ImgUrl;
+                
+            }
+        }
+
+        public static bool IsDateDeprecated(DateTime updated, int maxDiffMilliseconds)
+        {
+            var now = DateTime.Now;
+            var dif = (now - updated).TotalMilliseconds;
+            
+            return dif > maxDiffMilliseconds;
+        }
     }
 }

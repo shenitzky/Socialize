@@ -31,7 +31,8 @@ namespace Socialize.Logic
 
         //define the minimum value of match strength, below this -> no optional match
         private double MIN_MATCH_STRENGTH => 50;
-         
+        //define the maximum value of match request life time, above this -> match request removed
+        private int MAX_MATCHREQ_LIFE_TIME => 60000;
         //singlton implementation
         private static MatchReqHandler ReqHandlerInstance;
 
@@ -83,19 +84,25 @@ namespace Socialize.Logic
             var nextMatchReq = ReqContainerInstance.GetNextMatchRequest();
             if (nextMatchReq == null) return;
 
+            //Remove the match request in case the user didnt send updates for more then two minutes
+            if(SocializeUtil.IsDateDeprecated(nextMatchReq.Updated, MAX_MATCHREQ_LIFE_TIME))
+            {
+                await ReqContainerInstance.RemoveMatchReq(nextMatchReq.Id);
+                return;
+            }
+
             var allOtherMatchReq = ReqContainerInstance.GetAllOtherRequests(nextMatchReq.Id);
 
             //Verify the queue holds more than two match requests
             if(nextMatchReq == null || allOtherMatchReq.Length == 0)
             {
-                //TODO - think on optimization for empty / less than two object
+                await ReqContainerInstance.RestoreMatchReq(nextMatchReq.Id);
                 return;
             }
 
             //Verify match request is not suspended
             if (!nextMatchReq.WaitForOptionalMatchRes)
             {
-                //TODO - BETA implement this loop in more efficient way
                 foreach (var matchReq in allOtherMatchReq)
                 {
                     //Verify other match request not suspended

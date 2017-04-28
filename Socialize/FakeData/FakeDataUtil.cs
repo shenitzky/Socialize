@@ -9,7 +9,7 @@ namespace Socialize.FakeData
 {
     public class FakeDataUtil
     {
-        public static bool Fake = false;
+        public static bool Fake = true;
         public static UserDataObj CreateFakeUserData()
         {
             using(var db = ApplicationDbContext.Create())
@@ -121,7 +121,7 @@ namespace Socialize.FakeData
         public static Factor[] CreateFakeFactors(bool imgUrlRequire)
         {
             var domain = HttpContext.Current.Request.Url.Authority;
-            var imgUrl = imgUrlRequire ? $"{domain}/Content/Images/Factors/games.png" : "";
+            var imgUrl = imgUrlRequire ? $"http://{domain}/Content/Images/Factors/games.png" : "";
 
             return new Factor[]
                 {

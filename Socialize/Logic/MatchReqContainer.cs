@@ -54,6 +54,7 @@ namespace Socialize.Logic
             if (MatchRequests.ContainsKey(matchReqId))
             {
                 MatchRequests[matchReqId].MatchReqDetails.Location = location;
+                MatchRequests[matchReqId].Updated = DateTime.Now;
             }
             else
             {

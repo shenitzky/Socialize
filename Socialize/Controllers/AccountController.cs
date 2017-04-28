@@ -10,6 +10,7 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Socialize.Models;
 using System.Web.Http.Cors;
+using Socialize.Logic;
 
 namespace Socialize.Controllers
 {
@@ -75,19 +76,10 @@ namespace Socialize.Controllers
                 return Json(new { Error = errorString });
             }
 
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
-
-                    //if (returnUrl == null)
-                    //{
-                    //    var siteContext = SiteContext.SiteContextHelper.ResolveContextForEmail(model.Email, null);
-                    //    returnUrl = siteContext.SignedInUrl;
-                    //}
-
                     return Json(new { RedirectUrl = returnUrl });
                 case SignInStatus.LockedOut:
                     throw new NotImplementedException("Lockout");
@@ -188,8 +180,8 @@ namespace Socialize.Controllers
 
                     return Json(new { Error = errorString });
                 }
-
-                var user = new ApplicationUser { Email = model.Email, UserName = model.Email };
+                var imgUrl = SocializeUtil.RandomAvatarImg();
+                var user = new ApplicationUser { Email = model.Email, UserName = model.Email, ImgUrl = imgUrl };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {

@@ -22,6 +22,9 @@ namespace Socialize.Logic
         private OptionalMatchContainer OptionalMatchContainer;
         private OptionalMatchBuilder OptionalMatchBuilder;
 
+        //define the maximum value of optional match life time, above this -> optional match removed
+        private int MAX_OPTINAL_MATCH_LIFE_TIME => 60000;
+
         public static MatchManager GetManagerInstance()
         {
             if (ManagerInstance == null)
@@ -102,25 +105,28 @@ namespace Socialize.Logic
             {
                 var matchReq = MatchReqContainer.GetMatchReqById(matchReqId);
                 var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == matchReq.MatchOwner);
-
-                var desc = new string[] { };
-                if(user.Factors != null && user.Factors.Count > 0)
+                if(user != null)
                 {
-                    var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
-                    desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+                    var desc = new string[] { };
+                    if (user.Factors != null && user.Factors.Count > 0)
+                    {
+                        var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
+                        desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
+                    }
+
+                    var splitedMail = user.Email.Split('@');
+                    return new UserDataObj()
+                    {
+                        FirstName = user.FirstName ?? splitedMail[0],
+                        LastName = user.LastName ?? splitedMail[1],
+
+                        ImgUrl = user.ImgUrl,
+                        Age = user.Age,
+
+                        Description = desc,
+                    };
                 }
-
-                var splitedMail = user.Email.Split('@');
-                return new UserDataObj()
-                {
-                    FirstName = user.FirstName ?? splitedMail[0],
-                    LastName = user.LastName ?? splitedMail[1],
-
-                    ImgUrl = user.ImgUrl,
-                    Age = user.Age,
-
-                    Description = desc,
-                };
+                return null;
             }
             
 
@@ -167,7 +173,7 @@ namespace Socialize.Logic
                 return BuildDeclinedFinalMatch();
             }
             //Check if still waiting for one of the sides to respond
-            else if(!optionalMatch.Status.Any(x => !x.Value))
+            else if(!optionalMatch.Status.First().Value || !optionalMatch.Status.Last().Value)
             {
                 return null;
             }
@@ -180,6 +186,18 @@ namespace Socialize.Logic
         {
             var matchReqId = MatchReqContainer.GetMatchReqIdByOwner(userId);
             return matchReqId != -1 ? OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId) : null;
+        }
+        //Check if optional match alive more then 20 sec
+        public bool IsOptionalMatchDeprecate(int optionalMatchId)
+        {
+            var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
+            return SocializeUtil.IsDateDeprecated(optionalMatch.Created, MAX_OPTINAL_MATCH_LIFE_TIME);
+        }
+
+        //Remove optional match by id
+        public void RemoveOptionalMatchById(int optionalMatchId)
+        {
+            OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
         }
 
         private FinalMatch BuildDeclinedFinalMatch()

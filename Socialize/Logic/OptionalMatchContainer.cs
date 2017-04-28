@@ -85,7 +85,7 @@ namespace Socialize.Logic
 
             if (OptionalMatches.ContainsKey(optionalMatchId))
             {
-                return !OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.Any(x => !x.Value ); 
+                return (!OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.First().Value) || (!OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.Last().Value); 
                 
             }
             throw new MissingOptionalMatchException($"Can not find optional match id: {optionalMatchId}");
