@@ -7,13 +7,13 @@ namespace Socialize.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class Initial2 : IMigrationMetadata
+    public sealed partial class add_tables : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Initial2));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(add_tables));
         
         string IMigrationMetadata.Id
         {
-            get { return "201704070955231_Initial2"; }
+            get { return "201705131034283_add_tables"; }
         }
         
         string IMigrationMetadata.Source

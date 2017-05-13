@@ -12,7 +12,6 @@ namespace Socialize.Logic
      */
     public class IntuitiveMatchAlg : IMatchAlg
     {
-        public double MAX_DISTANCE  => 25;
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public Dictionary<int, int> CalcOptionalMatch(MatchRequest first, MatchRequest sec)
         {
@@ -24,7 +23,7 @@ namespace Socialize.Logic
             //Check proximity between the two requests
             var distance = SocializeUtil.CalculateLocationPriximity(first.MatchReqDetails.Location, sec.MatchReqDetails.Location);
 
-            if(distance > MAX_DISTANCE)
+            if(distance > first.MatchReqDetails.maxDistance || distance > sec.MatchReqDetails.maxDistance)
             {
                 return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
             }

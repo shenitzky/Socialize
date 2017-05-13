@@ -46,5 +46,7 @@ namespace Socialize.Models
         public List<Factor> MatchFactors { get; set; }
         // Location of the User who create the request
         public Location Location { get; set; }
+
+        public int maxDistance { get; set; }
     }
 }

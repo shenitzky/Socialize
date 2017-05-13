@@ -29,9 +29,6 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
-            if (FakeDataUtil.Fake)
-                await SignInDefaultUser();
-
             var parseObj = JsonConvert.SerializeObject(newMatchReq);
             Log.Debug($"POST CreateMatcReq calld with match details {parseObj}");
             using (var db = ApplicationDbContext.Create())
@@ -41,6 +38,19 @@ namespace Socialize.Controllers
                 var matchReq = new MatchRequest();
                 matchReq.MatchReqDetails = newMatchReq;
                 matchReq.MatchOwner = userId;
+
+                //save match request log
+                var logMatchReq = new MatchRequestLog()
+                {
+                    Created = DateTime.Now,
+                    Location = JsonConvert.SerializeObject(newMatchReq.Location),
+                    MatchFactors = JsonConvert.SerializeObject(newMatchReq.MatchFactors),
+                    maxDistance = newMatchReq.maxDistance,
+                    UserId = userId
+                };
+
+                db.MatchRequestLog.Add(logMatchReq);
+                db.SaveChanges();
 
                 var matchManager = MatchManager.GetManagerInstance();
                 await matchManager.CreateMatchRequest(matchReq);
@@ -62,6 +72,22 @@ namespace Socialize.Controllers
             //If optional match found
             if(optionalMatch != null)
             {
+                using (var db = ApplicationDbContext.Create())
+                {
+                    //save optional match log
+                    var logOptionalMatch = new OptionalMatchLog()
+                    {
+                        UserId = User.Identity.GetUserId(),
+                        Created = optionalMatch.Created,
+                        MatchedFactors = JsonConvert.SerializeObject(optionalMatch.MatchedFactors),
+                        MatchStrength = JsonConvert.SerializeObject(optionalMatch.MatchStrength)
+                    };
+
+
+                    db.OptionalMatchLog.Add(logOptionalMatch);
+                    await db.SaveChangesAsync();
+                }
+                
                 //Get matched user details
                 var matchedMatchReqId = optionalMatch.MatchRequestIds.Where(x => x != matchReqUpdate.matchReqId).FirstOrDefault();
                 var matchedUserDetails = matchManager.GetMatchedUserDetailsByMatchReqId(matchedMatchReqId);
@@ -143,9 +169,6 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task UpdateUserData(UpdateUserObj updateUserData)
         {
-            if (FakeDataUtil.Fake)
-                await SignInDefaultUser();
-
             var parseObj = JsonConvert.SerializeObject(updateUserData);
             Log.Debug($"POST UpdateUserData calld with user object {parseObj}");
 
@@ -186,9 +209,6 @@ namespace Socialize.Controllers
         {
             try
             {
-                if (FakeDataUtil.Fake)
-                    await SignInDefaultUser();
-
                 Log.Debug($"GET GetUserData calld");
                 using (var db = ApplicationDbContext.Create())
                 {
@@ -223,9 +243,6 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<IOptionalMatch> GetUserOptionalMatch()
         {
-            if (FakeDataUtil.Fake)
-                await SignInDefaultUser();
-
             var userId = User.Identity.GetUserId();
             var manager = MatchManager.GetManagerInstance();
 
@@ -238,9 +255,6 @@ namespace Socialize.Controllers
         {
             using (var db = ApplicationDbContext.Create())
             {
-                if (FakeDataUtil.Fake)
-                    await SignInDefaultUser();
-
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.FirstOrDefault(x => x.Id == userId);
 

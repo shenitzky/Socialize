@@ -38,9 +38,11 @@ namespace Socialize.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<FinalMatch> FinalMatches { get; set; }
+        public DbSet<FinalMatchLog> FinalMatchesLog { get; set; }
         public DbSet<Factor> Factors { get; set; }
         public DbSet<AvatarImg> AvatarImgs { get; set; }
+        public DbSet<OptionalMatchLog> OptionalMatchLog { get; set; }
+        public DbSet<MatchRequestLog> MatchRequestLog { get; set; }
 
 
         public ApplicationDbContext()

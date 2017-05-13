@@ -23,7 +23,7 @@ namespace Socialize.Logic
         private OptionalMatchBuilder OptionalMatchBuilder;
 
         //define the maximum value of optional match life time, above this -> optional match removed
-        private int MAX_OPTINAL_MATCH_LIFE_TIME => 60000;
+        private int MAX_OPTINAL_MATCH_LIFE_TIME => 120000;
 
         public static MatchManager GetManagerInstance()
         {
@@ -229,8 +229,19 @@ namespace Socialize.Logic
                     UsersId = userIds
                 };
 
-                //db.FinalMatches.Add(finalMatch);
-                //db.SaveChanges();
+                //save finale match log
+                var finalMatchLog = new FinalMatchLog()
+                {
+                    Created = finalMatch.Created,
+                    Factors = JsonConvert.SerializeObject(finalMatch.Factors),
+                    IsAccepted = finalMatch.IsAccepted,
+                    Locations = finalMatch.Locations,
+                    MatchStrength = JsonConvert.SerializeObject(finalMatch.MatchStrength),
+                    UsersId = JsonConvert.SerializeObject(finalMatch.UsersId)
+                };
+
+                db.FinalMatchesLog.Add(finalMatchLog);
+                db.SaveChanges();
 
                 return finalMatch;
             }
