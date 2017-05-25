@@ -7,13 +7,13 @@ namespace Socialize.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class add_final_match : IMigrationMetadata
+    public sealed partial class Remote_DB : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(add_final_match));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Remote_DB));
         
         string IMigrationMetadata.Id
         {
-            get { return "201705131219131_add_final_match"; }
+            get { return "201705200917329_Remote_DB"; }
         }
         
         string IMigrationMetadata.Source

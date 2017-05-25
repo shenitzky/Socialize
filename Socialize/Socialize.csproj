@@ -18,7 +18,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
+    <IISExpressSSLPort>44300</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -44,6 +44,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Facebook, Version=6.0.10.0, Culture=neutral, PublicKeyToken=58cb4f2111d1e6de, processorArchitecture=MSIL">
+      <HintPath>..\packages\Facebook.7.0.6\lib\net45\Facebook.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
@@ -81,6 +85,14 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0-rc1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0-rc1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
@@ -196,14 +208,8 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb">
       <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security">
-      <HintPath>..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Facebook">
       <HintPath>..\packages\Microsoft.Owin.Security.Facebook.3.0.1\lib\net45\Microsoft.Owin.Security.Facebook.dll</HintPath>
@@ -254,17 +260,9 @@
     <Compile Include="Logic\OptionalMatchContainer.cs" />
     <Compile Include="Logic\SocializeUtil.cs" />
     <Compile Include="Logic\StartThreadHandler.cs" />
-    <Compile Include="Migrations\201705131031599_Initial.cs" />
-    <Compile Include="Migrations\201705131031599_Initial.Designer.cs">
-      <DependentUpon>201705131031599_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201705131034283_add_tables.cs" />
-    <Compile Include="Migrations\201705131034283_add_tables.Designer.cs">
-      <DependentUpon>201705131034283_add_tables.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201705131219131_add_final_match.cs" />
-    <Compile Include="Migrations\201705131219131_add_final_match.Designer.cs">
-      <DependentUpon>201705131219131_add_final_match.cs</DependentUpon>
+    <Compile Include="Migrations\201705200917329_Remote_DB.cs" />
+    <Compile Include="Migrations\201705200917329_Remote_DB.Designer.cs">
+      <DependentUpon>201705200917329_Remote_DB.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -332,6 +330,8 @@
     <Content Include="dist\vendor.bundle.js.map" />
     <None Include="Properties\PublishProfiles\Socialize20170306063515 - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\Socialize20170313122446 - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\Socialize20170520113532 - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\SocializeEyal.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -395,14 +395,8 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201705131031599_Initial.resx">
-      <DependentUpon>201705131031599_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705131034283_add_tables.resx">
-      <DependentUpon>201705131034283_add_tables.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705131219131_add_final_match.resx">
-      <DependentUpon>201705131219131_add_final_match.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201705200917329_Remote_DB.resx">
+      <DependentUpon>201705200917329_Remote_DB.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
@@ -419,11 +413,11 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50825</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:50825/</IISUrl>
+          <IISUrl>https://localhost:44300/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

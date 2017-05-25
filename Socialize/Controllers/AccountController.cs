@@ -15,7 +15,7 @@ using Socialize.Logic;
 namespace Socialize.Controllers
 {
     [AllowAnonymous]
-   // [EnableCors("*","*","*")]
+    // [EnableCors("*","*","*")]
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
@@ -347,10 +347,11 @@ namespace Socialize.Controllers
         // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             // Request a redirect to the external login provider
+
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 

@@ -6,6 +6,7 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using Socialize.Models;
+using Microsoft.Owin.Security.Facebook;
 
 namespace Socialize
 {
@@ -54,9 +55,31 @@ namespace Socialize
             //   consumerKey: "",
             //   consumerSecret: "");
 
+            //var accessToken = Logic.Facebook.GetFacebookAccessToken();
+            //var facebookOpt = new FacebookAuthenticationOptions();
+
+            //facebookOpt.Scope.Add("email");
+            //facebookOpt.AppId = Logic.Facebook.FacebookAppId;
+            //facebookOpt.AppSecret = Logic.Facebook.FacebookAppSecret;
+
+            //facebookOpt.Provider = new FacebookAuthenticationProvider()
+            //{
+            //    OnAuthenticated = async (context) =>
+            //    {
+            //        context.Identity.AddClaim(new System.Security.Claims.Claim(accessToken, context.AccessToken));
+            //    }
+
+            //};
+            //facebookOpt.SignInAsAuthenticationType = DefaultAuthenticationTypes.ExternalCookie;
+            //app.UseFacebookAuthentication(facebookOpt);
+
             //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            //    appId: Logic.Facebook.FacebookAppId,
+            //    appSecret: Logic.Facebook.FacebookAppSecret);
+
+            //app.UseFacebookAuthentication(
+            //   appId: "381670928895948",
+            //   appSecret: "a2bae67647f7d99fba5851ae5173537b");
 
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{

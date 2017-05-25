@@ -200,6 +200,12 @@ namespace Socialize.Logic
             OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
         }
 
+        //Get match request by user id
+        public int GetMatchReqIdByUser(string userId)
+        {
+            return MatchReqContainer.GetMatchReqIdByOwner(userId);
+        }
+
         private FinalMatch BuildDeclinedFinalMatch()
         {
             return new FinalMatch()

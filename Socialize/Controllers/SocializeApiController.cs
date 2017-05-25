@@ -29,12 +29,21 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
+            var matchManager = MatchManager.GetManagerInstance();
+            var userId = User.Identity.GetUserId();
+
+            var userPendingMatchReqId = matchManager.GetMatchReqIdByUser(userId);
+            if(userPendingMatchReqId != -1)
+            {
+                var errParseObj = JsonConvert.SerializeObject(newMatchReq);
+                Log.Debug($"POST cannot create match request for user {userId}, there is pending match request on the system ");
+                return -1;
+            }
+
             var parseObj = JsonConvert.SerializeObject(newMatchReq);
             Log.Debug($"POST CreateMatcReq calld with match details {parseObj}");
             using (var db = ApplicationDbContext.Create())
             {
-                var userId = User.Identity.GetUserId();
-
                 var matchReq = new MatchRequest();
                 matchReq.MatchReqDetails = newMatchReq;
                 matchReq.MatchOwner = userId;
@@ -52,7 +61,7 @@ namespace Socialize.Controllers
                 db.MatchRequestLog.Add(logMatchReq);
                 db.SaveChanges();
 
-                var matchManager = MatchManager.GetManagerInstance();
+                
                 await matchManager.CreateMatchRequest(matchReq);
 
                 return matchReq.Id;
@@ -146,7 +155,7 @@ namespace Socialize.Controllers
 
 
 
-            if(finalMatch != null)
+            if (finalMatch != null)
             {
                 if (finalMatch.IsAccepted)
                 {
@@ -156,7 +165,7 @@ namespace Socialize.Controllers
                     {
                         await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
                         manager.RemoveOptionalMatchById(optionalMatchId);
-                    }            
+                    }
                 }
 
                 return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
@@ -241,12 +250,23 @@ namespace Socialize.Controllers
 
         //Get user pending optional match
         [HttpGet]
-        public async Task<IOptionalMatch> GetUserOptionalMatch()
+        public async Task<OptinalMatchObj> GetUserOptionalMatch()
         {
             var userId = User.Identity.GetUserId();
             var manager = MatchManager.GetManagerInstance();
 
-            return manager.GetOptionalMatchByOwnerId(userId);
+            var optionalMatch = manager.GetOptionalMatchByOwnerId(userId);
+            if(optionalMatch == null)
+            {
+                return null;
+            }
+            var userPendingMatchReqId = manager.GetMatchReqIdByUser(userId);
+
+            var matchedMatchReqId = optionalMatch.MatchRequestIds.Where(x => x != userPendingMatchReqId).FirstOrDefault();
+
+            var matchedUserDetails = manager.GetMatchedUserDetailsByMatchReqId(matchedMatchReqId);
+
+            return SocializeUtil.ConvertToOptinalMatchObj(optionalMatch, userPendingMatchReqId, matchedUserDetails);
         }
 
         //Get conected user img url
@@ -278,6 +298,21 @@ namespace Socialize.Controllers
             AutheticationManager.SignOut();
         }
 
+        [HttpGet]
+        public async Task<object> GetAddressFromCoords(string lat1, string lang1, string lat2, string lang2)
+        {
+            var firstAdress = SocializeUtil.RetrieveFormatedAddress(lat1, lang1);
+            var secAdress = SocializeUtil.RetrieveFormatedAddress(lat2, lang2);
+
+            if (firstAdress == null || secAdress == null)
+                return null;
+
+            return new
+            {
+                FirstAddress = firstAdress,
+                SecAddress = secAdress
+            };
+        }
 
         [HttpGet]
         public async Task AddAvatarImg()
@@ -531,47 +566,6 @@ namespace Socialize.Controllers
             await manager.CreateMatchRequest(third);
             await manager.CreateMatchRequest(sec);
             await manager.CreateMatchRequest(fourth);
-        }
-
-
-        [HttpGet]
-        public async Task Test5()
-        {
-            var imgUrl = "";
-            MatchManager manager = MatchManager.GetManagerInstance();
-            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
-            var first = new MatchRequest();
-            var firstReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.5, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-                   {
-                       new Factor()
-                       {
-                           Class = "sport",
-                           SubClasses = new List<SubClass>()
-                                {
-                                    new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
-                                    new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
-                                }
-                       },
-                       new Factor()
-                       {
-                           Class = "gamming",
-                           SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
-                       },
-                       new Factor()
-                       {
-                           Class = "work",
-                           SubClasses = new List<SubClass>()
-                                {
-                                    new SubClass() { Name = "Prog", ImgUrl = imgUrl },
-                                }
-                        }
-                    }
-            };
-            first.MatchReqDetails = firstReq;
-            await manager.CreateMatchRequest(first);
         }
     }
 }
