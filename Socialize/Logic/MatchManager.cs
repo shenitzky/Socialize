@@ -68,8 +68,11 @@ namespace Socialize.Logic
         public async Task RemoveMatchRequestsByOptionalMatchId(int optionalMatchId)
         {
             var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
-            await RemoveMatchRequest(optionalMatch.MatchRequestIds.First());
-            await RemoveMatchRequest(optionalMatch.MatchRequestIds.Last());
+            if(optionalMatch != null)
+            {
+                await RemoveMatchRequest(optionalMatch.MatchRequestIds.First());
+                await RemoveMatchRequest(optionalMatch.MatchRequestIds.Last());
+            }   
         }
 
         //Check if found optional match or if timeout occured
@@ -107,23 +110,15 @@ namespace Socialize.Logic
                 var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == matchReq.MatchOwner);
                 if(user != null)
                 {
-                    var desc = new string[] { };
-                    if (user.Factors != null && user.Factors.Count > 0)
-                    {
-                        var factors = user.Factors.Count > 5 ? user.Factors.Take(5) : user.Factors;
-                        desc = factors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name))).ToArray();
-                    }
-
-                    var splitedMail = user.Email.Split('@');
                     return new UserDataObj()
                     {
-                        FirstName = user.FirstName ?? splitedMail[0],
-                        LastName = user.LastName ?? splitedMail[1],
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
 
                         ImgUrl = user.ImgUrl,
                         Age = user.Age,
 
-                        Description = desc,
+                        Description = user.Description,
                     };
                 }
                 return null;
@@ -191,7 +186,7 @@ namespace Socialize.Logic
         public bool IsOptionalMatchDeprecate(int optionalMatchId)
         {
             var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
-            return SocializeUtil.IsDateDeprecated(optionalMatch.Created, MAX_OPTINAL_MATCH_LIFE_TIME);
+            return optionalMatch != null ? SocializeUtil.IsDateDeprecated(optionalMatch.Created, MAX_OPTINAL_MATCH_LIFE_TIME) : true;
         }
 
         //Remove optional match by id

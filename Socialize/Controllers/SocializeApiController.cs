@@ -29,6 +29,10 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
+            
+
+
+            //
             var matchManager = MatchManager.GetManagerInstance();
             var userId = User.Identity.GetUserId();
 
@@ -37,7 +41,7 @@ namespace Socialize.Controllers
             {
                 var errParseObj = JsonConvert.SerializeObject(newMatchReq);
                 Log.Debug($"POST cannot create match request for user {userId}, there is pending match request on the system ");
-                return -1;
+                return userPendingMatchReqId;
             }
 
             var parseObj = JsonConvert.SerializeObject(newMatchReq);
@@ -77,6 +81,19 @@ namespace Socialize.Controllers
 
             var matchManager = MatchManager.GetManagerInstance();
             var optionalMatch = matchManager.CheckMatchRequestStatus(matchReqUpdate.matchReqId);
+
+            //Check if match request exist (depricated)
+            var userId = User.Identity.GetUserId();
+            var matchReqId = matchManager.GetMatchReqIdByUser(userId);
+
+            if(matchReqId == -1)
+            {
+                return new OptinalMatchObj
+                {
+                    Id = -1
+                };
+            }
+
             
             //If optional match found
             if(optionalMatch != null)
@@ -143,17 +160,19 @@ namespace Socialize.Controllers
             Log.Debug($"GET CheckOptionalMatchStatus calld with id {optionalMatchId}");
 
             var manager = MatchManager.GetManagerInstance();
+
             //Remove the optional match in case it alive more then 20 sec
             if (manager.IsOptionalMatchDeprecate(optionalMatchId))
             {
                 await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
                 manager.RemoveOptionalMatchById(optionalMatchId);
-                return null;
+                return new FinalMatchObj()
+                {
+                    IsAccepted = false,
+                };
             }
 
             var finalMatch = manager.CheckOptionalMatchStatus(optionalMatchId);
-
-
 
             if (finalMatch != null)
             {
@@ -168,7 +187,8 @@ namespace Socialize.Controllers
                     }
                 }
 
-                return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId);
+                var userId = User.Identity.GetUserId();
+                return SocializeUtil.ConvertToFinalMatchObj(finalMatch, matchReqId, userId);
 
             }
             return null;
@@ -273,12 +293,25 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<string> GetUserImgUrl()
         {
-            using (var db = ApplicationDbContext.Create())
+            var userId = User.Identity.GetUserId();
+            return SocializeUtil.GetUserImg(userId);
+        }
+
+        [HttpPost]
+        public async Task UpdateUserExtraData(UserExtraData data)
+        {
+            using(var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.FirstOrDefault(x => x.Id == userId);
 
-                return user != null ? user.ImgUrl : null;
+                user.FirstName = data.FirstName;
+                user.LastName = data.LastName;
+                user.Description = data.Description;
+                user.PhoneNumber = data.PhoneNumber;
+                user.Age = data.Age;
+
+                await db.SaveChangesAsync();
             }
         }
 
@@ -287,7 +320,17 @@ namespace Socialize.Controllers
         public async Task<Factor[]> GetAllSystemFactors()
         {
             Log.Debug($"GET GetAllSystemFactors calld");
-            return FakeDataUtil.CreateFakeFactors(true);
+            using(var db = ApplicationDbContext.Create())
+            {
+                var factors = db.Factors.Include(x => x.SubClasses).Where(x => x.UserId == null).ToArray();
+                return factors;
+            }
+        }
+
+        [HttpGet]
+        public async Task AddFactorToDb()
+        {
+            FakeDataUtil.CreateFactors();
         }
 
         //Log out 
@@ -298,21 +341,21 @@ namespace Socialize.Controllers
             AutheticationManager.SignOut();
         }
 
-        [HttpGet]
-        public async Task<object> GetAddressFromCoords(string lat1, string lang1, string lat2, string lang2)
-        {
-            var firstAdress = SocializeUtil.RetrieveFormatedAddress(lat1, lang1);
-            var secAdress = SocializeUtil.RetrieveFormatedAddress(lat2, lang2);
+        //[HttpGet]
+        //public async Task<object> GetAddressFromCoords(string lat1, string lang1, string lat2, string lang2)
+        //{
+        //    var firstAdress = SocializeUtil.RetrieveFormatedAddress(lat1, lang1);
+        //    var secAdress = SocializeUtil.RetrieveFormatedAddress(lat2, lang2);
 
-            if (firstAdress == null || secAdress == null)
-                return null;
+        //    if (firstAdress == null || secAdress == null)
+        //        return null;
 
-            return new
-            {
-                FirstAddress = firstAdress,
-                SecAddress = secAdress
-            };
-        }
+        //    return new
+        //    {
+        //        FirstAddress = firstAdress,
+        //        SecAddress = secAdress
+        //    };
+        //}
 
         [HttpGet]
         public async Task AddAvatarImg()
@@ -336,6 +379,8 @@ namespace Socialize.Controllers
 
             }
         }
+
+        
 
         [HttpGet]
         public async Task SignInDefaultUser()

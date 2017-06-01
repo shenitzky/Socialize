@@ -51,8 +51,10 @@ namespace Socialize.Logic
         public void RemoveOptionalMatchByOptionalMatchId(int optionalMatchId)
         {
             Log.Debug($"Remove Optional match by optional match Id {optionalMatchId}");
-
-            OptionalMatches.Remove(optionalMatchId);
+            if (OptionalMatches.ContainsKey(optionalMatchId))
+            {
+                OptionalMatches.Remove(optionalMatchId);
+            }
         }
 
         //Get optional match by match request id
@@ -85,7 +87,7 @@ namespace Socialize.Logic
 
             if (OptionalMatches.ContainsKey(optionalMatchId))
             {
-                return (!OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.First().Value) && (!OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.Last().Value); 
+                return (OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.First().Value) && (OptionalMatches[optionalMatchId].FinalMatchReceivedStatus.Last().Value); 
                 
             }
             throw new MissingOptionalMatchException($"Can not find optional match id: {optionalMatchId}");

@@ -40,7 +40,8 @@ namespace Socialize.Logic
         //convert from IoptionaMatch to OptinalMatchObj
         public static OptinalMatchObj ConvertToOptinalMatchObj(IOptionalMatch source, int matchReqId, UserDataObj matchdDetails)
         {
-            
+            var factors = source.MatchedFactors.Select(x => string.Join(",", x.SubClasses.Select(z => z.Name).ToArray())).ToArray();
+
             return new OptinalMatchObj()
             {
                 Id = source.Id,
@@ -48,19 +49,35 @@ namespace Socialize.Logic
                 MatchedFactors = source.MatchedFactors,
                 MatchRequestId = matchReqId,
                 MatchStrength = source.MatchStrength[matchReqId],
-                MatchedDetails = matchdDetails
+                MatchedDetails = matchdDetails,
+                RawMatchFactors = factors
             };
         }
 
-        //convert from FinalMatch to FinalMatchObj
-        public static FinalMatchObj ConvertToFinalMatchObj(FinalMatch source, int matchReqId)
+        //Get user img url by user id
+        public static string GetUserImg(string userId)
         {
+            using (var db = ApplicationDbContext.Create())
+            {
+                var user = db.Users.FirstOrDefault(x => x.Id == userId);
+                return user != null ? user.ImgUrl : null;
+            }
+        }
+
+        //Convert from FinalMatch to FinalMatchObj
+        public static FinalMatchObj ConvertToFinalMatchObj(FinalMatch source, int matchReqId, string myUserId)
+        {
+            var matchedUserId = source.UsersId.FirstOrDefault(x => x != myUserId);
+
             return new FinalMatchObj()
             {
                 IsAccepted = source.IsAccepted,
                 Locations = source.Locations != null ? ConvertLocationStringToLocationsList(source.Locations) : null,
-                MatchStrength = source.MatchStrength != null ? source.MatchStrength[matchReqId] : 0
+                MatchStrength = source.MatchStrength != null ? source.MatchStrength[matchReqId] : 0,
+                MyImgUrl = GetUserImg(myUserId),
+                MatchedImgUrl = matchedUserId != null ? GetUserImg(matchedUserId) : null
             };
+        
         }
 
         public static string ConvertLocationsToString(List<Location> locations)
@@ -102,33 +119,33 @@ namespace Socialize.Logic
             return dif > maxDiffMilliseconds;
         }
 
-        public static string RetrieveFormatedAddress(string lat, string lng)
-        {
-            string baseUri = "http://maps.googleapis.com/maps/api/geocode/xml?latlng={0},{1}&sensor=false";
-            string requestUri = string.Format(baseUri, lat, lng);
+        //public static string RetrieveFormatedAddress(string lat, string lng)
+        //{
+        //    string baseUri = "http://maps.googleapis.com/maps/api/geocode/xml?latlng={0},{1}&sensor=false";
+        //    string requestUri = string.Format(baseUri, lat, lng);
 
-            using (WebClient wc = new WebClient())
-            {
-                string result = wc.DownloadString(requestUri);
-                var xmlElm = XElement.Parse(result);
-                var status = (from elm in xmlElm.Descendants()
-                              where
-                                elm.Name == "status"
-                              select elm).FirstOrDefault();
-                if (status.Value.ToLower() == "ok")
-                {
-                    var res = (from elm in xmlElm.Descendants()
-                               where
-                                elm.Name == "formatted_address"
-                               select elm).FirstOrDefault();
-                    requestUri = res.Value;
-                    return requestUri;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
+        //    using (WebClient wc = new WebClient())
+        //    {
+        //        string result = wc.DownloadString(requestUri);
+        //        var xmlElm = XElement.Parse(result);
+        //        var status = (from elm in xmlElm.Descendants()
+        //                      where
+        //                        elm.Name == "status"
+        //                      select elm).FirstOrDefault();
+        //        if (status.Value.ToLower() == "ok")
+        //        {
+        //            var res = (from elm in xmlElm.Descendants()
+        //                       where
+        //                        elm.Name == "formatted_address"
+        //                       select elm).FirstOrDefault();
+        //            requestUri = res.Value;
+        //            return requestUri;
+        //        }
+        //        else
+        //        {
+        //            return null;
+        //        }
+        //    }
+        //}
     }
 }

@@ -12,5 +12,8 @@ namespace Socialize.Models.GetResponseObjects
         public List<Location> Locations { get; set; }
 
         public bool IsAccepted { get; set; }
+
+        public string MyImgUrl { get; set; }
+        public string MatchedImgUrl { get; set; }
     }
 }

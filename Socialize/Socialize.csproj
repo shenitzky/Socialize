@@ -290,6 +290,7 @@
     <Compile Include="Models\PostRequestObjects\MatchReqUpdateObj.cs" />
     <Compile Include="Models\PostRequestObjects\OptionalMatchIdAndMatchReqIdObj.cs" />
     <Compile Include="Models\PostRequestObjects\UpdateUserObj.cs" />
+    <Compile Include="Models\PostRequestObjects\UserExtraData.cs" />
     <Compile Include="Models\SubClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -297,11 +298,31 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\Images\Factors\games.png" />
+    <Content Include="Content\Images\Factors\basketball.png" />
+    <Content Include="Content\Images\Factors\cooking.png" />
+    <Content Include="Content\Images\Factors\engineer.png" />
+    <Content Include="Content\Images\Factors\football.png" />
+    <Content Include="Content\Images\Factors\lawyer.png" />
+    <Content Include="Content\Images\Factors\painting.png" />
+    <Content Include="Content\Images\Factors\pc.png" />
+    <Content Include="Content\Images\Factors\photography.png" />
+    <Content Include="Content\Images\Factors\programmer.png" />
+    <Content Include="Content\Images\Factors\ps.png" />
+    <Content Include="Content\Images\Factors\riding.png" />
+    <Content Include="Content\Images\Factors\soccer.png" />
+    <Content Include="Content\Images\Factors\student.png" />
+    <Content Include="Content\Images\Factors\tennis.png" />
+    <Content Include="Content\Images\Factors\wii.png" />
+    <Content Include="Content\Images\Factors\xbox.png" />
+    <Content Include="Content\Images\Icons\age.svg" />
+    <Content Include="Content\Images\Icons\description.svg" />
+    <Content Include="Content\Images\Icons\face.svg" />
     <Content Include="Content\Images\Icons\history.svg" />
+    <Content Include="Content\Images\Icons\lastName.svg" />
     <Content Include="Content\Images\Icons\logo.png" />
     <Content Include="Content\Images\Icons\match.svg" />
     <Content Include="Content\Images\Icons\notifications.svg" />
+    <Content Include="Content\Images\Icons\phone.svg" />
     <Content Include="Content\Images\Icons\userProfile.svg" />
     <Content Include="Content\Images\Icons\v.png" />
     <Content Include="Content\Images\Profiles\profile1.png" />
@@ -417,7 +438,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50825</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44300/</IISUrl>
+          <IISUrl>http://localhost:50825/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

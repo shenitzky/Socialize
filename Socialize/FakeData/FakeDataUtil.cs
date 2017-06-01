@@ -101,7 +101,7 @@ namespace Socialize.FakeData
                         Age = 23,
                         ImgUrl = fakeImg.ImgUrl,
 
-                        Description = desc
+                        //Description = desc
                     }
                 };
             }
@@ -118,9 +118,76 @@ namespace Socialize.FakeData
                 
         }
 
+        private static string CreateImgUrl(string name)
+        {
+            var domain = "http://socialize20170520113532.azurewebsites.net";
+            var imgUrl = $"{domain}/Content/Images/Factors/{name}.png";
+
+            return imgUrl;
+        }
+
+        public static void CreateFactors()
+        {
+            using(var db = ApplicationDbContext.Create())
+            {
+                var factors = new Factor[]
+                                {
+                    new Factor()
+                        {
+                            Class = "Sport" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Tennis", ImgUrl = CreateImgUrl("tennis") },
+                                new SubClass() { Name = "Soccer", ImgUrl = CreateImgUrl("soccer") },
+                                new SubClass() { Name = "Basketball", ImgUrl = CreateImgUrl("basketball") },
+                                new SubClass() { Name = "Football", ImgUrl = CreateImgUrl("football") }
+                            }
+                        },
+                    new Factor()
+                        {
+                            Class = "Hobbies" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Painting", ImgUrl = CreateImgUrl("painting") },
+                                new SubClass() { Name = "Photography", ImgUrl = CreateImgUrl("photography")},
+                                new SubClass() { Name = "Riding", ImgUrl = CreateImgUrl("riding") },
+                                new SubClass() { Name = "Cooking", ImgUrl = CreateImgUrl("cooking") }
+                            }
+                        },
+                    new Factor()
+                        {
+                            Class = "Gamming" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Xbox", ImgUrl = CreateImgUrl("xbox") },
+                                new SubClass() { Name = "Wii", ImgUrl = CreateImgUrl("wii")},
+                                new SubClass() { Name = "Ps", ImgUrl = CreateImgUrl("ps") },
+                                new SubClass() { Name = "Pc", ImgUrl = CreateImgUrl("pc") }
+                            }
+                        },
+                    new Factor()
+                        {
+                            Class = "Work" ,
+                            SubClasses = new List<SubClass>()
+                            {
+                                new SubClass() { Name = "Student", ImgUrl = CreateImgUrl("student") },
+                                new SubClass() { Name = "Lawyer", ImgUrl = CreateImgUrl("lawyer") },
+                                new SubClass() { Name = "Engineer", ImgUrl = CreateImgUrl("engineer") },
+                                new SubClass() { Name = "Economist", ImgUrl = CreateImgUrl("economist") }
+                            }
+                        }
+                    };
+
+                db.Factors.AddRange(factors);
+                db.SaveChanges();
+            }
+            
+        }
+
         public static Factor[] CreateFakeFactors(bool imgUrlRequire)
         {
-            var domain = HttpContext.Current.Request.Url.Authority;
+            var domain = "http://socialize20170520113532.azurewebsites.net";
+            //var domain = HttpContext.Current.Request.Url.Authority;
             var imgUrl = imgUrlRequire ? $"http://{domain}/Content/Images/Factors/games.png" : "";
 
             return new Factor[]

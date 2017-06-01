@@ -18,7 +18,27 @@ namespace Socialize.Logic
 
         public static async Task RunThread()
         {
-            Thread oThread = new Thread(new ThreadStart(async () => await ThreadLogic()));
+            Func<Task> func = async () =>
+            {
+                var handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
+                int i = 0;
+                while (true)
+                {
+                    Trace.WriteLine($"{i} before");
+                    try
+                    {
+                        await handler.SendMatchReqToFindMatch();
+                    }
+                    catch(Exception ex)
+                    {
+                        int z = 90;
+                    }
+                    
+                    Thread.Sleep(3000);
+                    Trace.WriteLine($"{i++} after");
+                }
+            };
+            Thread oThread = new Thread(new ThreadStart(async () => await func()));
             oThread.Start();
             //while (!oThread.IsAlive) ;
 

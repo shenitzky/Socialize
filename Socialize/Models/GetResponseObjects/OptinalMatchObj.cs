@@ -14,5 +14,7 @@ namespace Socialize.Models.GetResponseObjects
         public int MatchStrength { get; set; }
 
         public UserDataObj MatchedDetails { get; set; }
+
+        public string[] RawMatchFactors { get; set; }
     }
 }
