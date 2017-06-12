@@ -40,8 +40,6 @@ namespace Socialize.Logic
             };
             Thread oThread = new Thread(new ThreadStart(async () => await func()));
             oThread.Start();
-            //while (!oThread.IsAlive) ;
-
         }
 
         private static async Task ThreadLogic()

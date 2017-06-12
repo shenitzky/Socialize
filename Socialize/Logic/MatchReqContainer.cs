@@ -111,7 +111,9 @@ namespace Socialize.Logic
             if (RequestsQ.Count != 0)
             {
                 var nextReqId = RequestsQ.Dequeue();
-                return MatchRequests[nextReqId];
+                //Match req removed from dic but not from Q 
+                if (MatchRequests.ContainsKey(nextReqId))
+                    return MatchRequests[nextReqId];
             }
             return null;
         }
