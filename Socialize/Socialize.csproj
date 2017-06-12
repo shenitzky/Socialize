@@ -245,7 +245,6 @@
     <Compile Include="Exeptions\MissingOptionalMatchException.cs" />
     <Compile Include="Exeptions\MissingMatchRequestIdException.cs" />
     <Compile Include="Exeptions\SocializeExeption.cs" />
-    <Compile Include="FakeData\FakeDataUtil.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -268,9 +267,9 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AvatarImg.cs" />
     <Compile Include="Models\FinalMatchLog.cs" />
+    <Compile Include="Models\GetResponseObjects\ImagesObj.cs" />
     <Compile Include="Models\MatchRequestLog.cs" />
     <Compile Include="Models\OptionalMatchLog.cs" />
-    <Compile Include="Models\GetResponseObjects\SystemFactorObj.cs" />
     <Compile Include="Models\GetResponseObjects\FactorObj.cs" />
     <Compile Include="Models\GetResponseObjects\FinalMatchObj.cs" />
     <Compile Include="Models\GetResponseObjects\OptinalMatchObj.cs" />
@@ -285,7 +284,6 @@
     <Compile Include="Models\MatchRequest.cs" />
     <Compile Include="Models\OneOnOneOptionalMatch.cs" />
     <Compile Include="Models\PartyOptionalMatch.cs" />
-    <Compile Include="Models\PostRequestObjects\EntityIdObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchRequestObj.cs" />
     <Compile Include="Models\PostRequestObjects\MatchReqUpdateObj.cs" />
     <Compile Include="Models\PostRequestObjects\OptionalMatchIdAndMatchReqIdObj.cs" />

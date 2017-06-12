@@ -10,7 +10,6 @@ using System.Web.Http;
 using Socialize.Models.PostRequestObjects;
 using Socialize.Models.GetResponseObjects;
 using Socialize.Logic;
-using Socialize.FakeData;
 using System.Web.Http.Cors;
 using log4net;
 using Newtonsoft.Json;
@@ -29,10 +28,9 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
-            
+            if (newMatchReq.MatchFactors == null || newMatchReq.MatchFactors.Count == 0)
+                return -1;
 
-
-            //
             var matchManager = MatchManager.GetManagerInstance();
             var userId = User.Identity.GetUserId();
 
@@ -64,7 +62,6 @@ namespace Socialize.Controllers
 
                 db.MatchRequestLog.Add(logMatchReq);
                 db.SaveChanges();
-
                 
                 await matchManager.CreateMatchRequest(matchReq);
 
@@ -93,8 +90,6 @@ namespace Socialize.Controllers
                     Id = -1
                 };
             }
-
-            
             //If optional match found
             if(optionalMatch != null)
             {
@@ -139,7 +134,7 @@ namespace Socialize.Controllers
             Log.Debug($"POST AcceptOptionalMatch calld with OptionalMatchIdAndMatchReqIdObj object {parseObj}");
 
             var manager = MatchManager.GetManagerInstance();
-            manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, true);
+            await manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, true);
         }
 
         //Decline optional match suggestion
@@ -150,7 +145,7 @@ namespace Socialize.Controllers
             Log.Debug($"POST DeclineOptionalMatch calld with id object {parseObj}");
 
             var manager = MatchManager.GetManagerInstance();
-            manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, false);
+            await manager.AcceptOrDeclineOptionalMatch(ids.OptionalMatchId, ids.MatchReqId, false);
         }
 
         //Check optional match status - if confirmed by all other participants (loop)
@@ -203,15 +198,12 @@ namespace Socialize.Controllers
 
             using (var db = ApplicationDbContext.Create())
             {
-                
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(z => z.SubClasses)).FirstOrDefault(x => x.Id == userId);
 
                 var originalFactors = user.Factors;
                 var rawOriginalSubClasses = originalFactors.Select(x => x.SubClasses.ToArray());
                 
-                //TODO: delete subClasses from db
-
                 db.Factors.RemoveRange(originalFactors);
 
                 var factorToInsert = new List<Factor>();
@@ -236,36 +228,28 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<UserDataObj> GetUserData()
         {
-            try
+            Log.Debug($"GET GetUserData calld");
+            using (var db = ApplicationDbContext.Create())
             {
-                Log.Debug($"GET GetUserData calld");
-                using (var db = ApplicationDbContext.Create())
+                var userId = User.Identity.GetUserId();
+                var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Id == userId);
+
+                if (user == null)
+                    throw new Exception("user not found");
+
+                return new UserDataObj()
                 {
-                    var userId = User.Identity.GetUserId();
-                    var user = db.Users.Include(x => x.Factors).Include(x => x.Factors.Select(f => f.SubClasses)).FirstOrDefault(x => x.Id == userId);
+                    Age = user.Age,
+                    FirstName = user.FirstName ?? "Moshe",
+                    LastName = user.LastName ?? "Levi",
+                    Id = user.Id,
+                    ImgUrl = user.ImgUrl ?? db.AvatarImgs.First().ImgUrl,
+                    Mail = user.Email,
+                    Premium = false,
 
-                    if (user == null)
-                        throw new Exception("user not found");
-
-                    return new UserDataObj()
-                    {
-                        Age = user.Age,
-                        FirstName = user.FirstName ?? "Moshe",
-                        LastName = user.LastName ?? "Levi",
-                        Id = user.Id,
-                        ImgUrl = user.ImgUrl ?? db.AvatarImgs.First().ImgUrl,
-                        Mail = user.Email,
-                        Premium = false,
-
-                        Factors = user.Factors?.ToArray()
-                    };
-                }
+                    Factors = user.Factors?.ToArray()
+                };
             }
-            catch(Exception ex)
-            {
-                throw ex;
-            }
-            
         }
 
         //Get user pending optional match
@@ -297,6 +281,7 @@ namespace Socialize.Controllers
             return SocializeUtil.GetUserImg(userId);
         }
 
+        //Set user informations
         [HttpPost]
         public async Task UpdateUserExtraData(UserExtraData data)
         {
@@ -327,10 +312,30 @@ namespace Socialize.Controllers
             }
         }
 
+        //Get pair of images for effect on the client gui
+        [HttpGet]
+        public async Task<ImagesObj[]> GetImagesForBubble()
+        {
+            using(var db = ApplicationDbContext.Create())
+            {
+                var allImages = db.AvatarImgs.ToArray();
+                var images = new List<ImagesObj>();
+
+                var length = allImages.Length % 2 == 0 ? allImages.Length : allImages.Length - 1;
+                for (var i = 0; i < length; i++)
+                {
+                    images.Add(new ImagesObj(allImages[i].ImgUrl, allImages[i + 1].ImgUrl));
+                }
+
+                return images.ToArray();
+            }
+        }
+
+        //Add all possible factors to the DB
         [HttpGet]
         public async Task AddFactorToDb()
         {
-            FakeDataUtil.CreateFactors();
+            SocializeUtil.CreateFactors();
         }
 
         //Log out 
@@ -341,22 +346,7 @@ namespace Socialize.Controllers
             AutheticationManager.SignOut();
         }
 
-        //[HttpGet]
-        //public async Task<object> GetAddressFromCoords(string lat1, string lang1, string lat2, string lang2)
-        //{
-        //    var firstAdress = SocializeUtil.RetrieveFormatedAddress(lat1, lang1);
-        //    var secAdress = SocializeUtil.RetrieveFormatedAddress(lat2, lang2);
-
-        //    if (firstAdress == null || secAdress == null)
-        //        return null;
-
-        //    return new
-        //    {
-        //        FirstAddress = firstAdress,
-        //        SecAddress = secAdress
-        //    };
-        //}
-
+        //Add user images to DB
         [HttpGet]
         public async Task AddAvatarImg()
         {
@@ -376,241 +366,7 @@ namespace Socialize.Controllers
                 }
 
                 await db.SaveChangesAsync();
-
             }
-        }
-
-        
-
-        [HttpGet]
-        public async Task SignInDefaultUser()
-        {
-            using(var db = ApplicationDbContext.Create())
-            {
-                var userMail = "nodler@gmail.com";
-                var user = db.Users.FirstOrDefault(x => x.Email == userMail);
-
-                var AutheticationManager = HttpContext.Current.GetOwinContext().Authentication;
-
-                var userManager = HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                var claimsIdentity = userManager.CreateIdentity(user, DefaultAuthenticationTypes.ApplicationCookie);
-
-                AutheticationManager.SignIn(new Microsoft.Owin.Security.AuthenticationProperties { IsPersistent = true }, claimsIdentity);
-            }
-        }
-
-
-        [HttpGet]
-        public async Task<object> Test(int index)
-        {
-            switch (index)
-            {
-                case 0:
-                    return FakeDataUtil.CreateFakeFactors(false);
-                    break;
-                case 1:
-                    return FakeDataUtil.CreateFakeFactorsWithoutUrl();
-                    break;
-                case 2:
-                    return FakeDataUtil.CreateFakeFinalMatch();
-                    break;
-                case 3:
-                    return FakeDataUtil.CreateFakeOptionalMatch();
-                    break;
-                case 4:
-                    return FakeDataUtil.CreateFakeUserData();
-                    break;
-                case 5:
-                    return FakeDataUtil.FakeUserImgUrl();
-                    break;
-            }
-            return null;
-        }
-
-
-        [HttpGet]
-        public async Task Test2(int first, int sec)
-        {
-            var manager = MatchManager.GetManagerInstance();
-            var result = new Dictionary<int, int>() { { first, 88 }, { sec, 92 } };
-            //Do not use, change to OnOptionalMatchFound which is an event func
-            //manager.OptionalMatchFound(result);
-
-        }
-
-        
-
-        [HttpGet]
-        public async Task Test4()
-        {
-            MatchManager manager = MatchManager.GetManagerInstance();
-            MatchReqHandler handler = MatchReqHandler.GetMatchReqHandlerInstance(AlgorithemsTypes.IntuitiveMatchAlg);
-
-            //new Factor[]
-            //    {
-            //        new Factor()
-            //            {
-            //                Class = "Sport" ,
-            //                SubClasses = new List<SubClass>()
-            //                {
-            //                    new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Tennis3", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Tennis1", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Tennis2", ImgUrl = imgUrl }
-            //                }
-            //            },
-            //        new Factor()
-            //            {
-            //                Class = "Work" ,
-            //                SubClasses = new List<SubClass>()
-            //                {
-            //                    new SubClass() { Name = "Prog", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Eng1", ImgUrl = imgUrl},
-            //                    new SubClass() { Name = "Eng2", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Eng3", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Eng4", ImgUrl = imgUrl }
-            //                }
-            //            },
-            //        new Factor()
-            //            {
-            //                Class = "Hobbies" ,
-            //                SubClasses = new List<SubClass>()
-            //                {
-            //                    new SubClass() { Name = "Baking", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Fishing", ImgUrl = imgUrl},
-            //                    new SubClass() { Name = "Cleaning", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Fishing", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Fishing5", ImgUrl = imgUrl }
-            //                }
-            //            },
-            //        new Factor()
-            //            {
-            //                Class = "Gamming" ,
-            //                SubClasses = new List<SubClass>()
-            //                {
-            //                    new SubClass() { Name = "PS4", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "XBOX", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "GameBoy", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "Tetris", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "PS3", ImgUrl = imgUrl },
-            //                    new SubClass() { Name = "PS2", ImgUrl = imgUrl }
-            //                }
-            //            }
-            //    };
-
-            var imgUrl = "";
-            var firstReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "sport",
-                       SubClasses = new List<SubClass>()
-                            {
-                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
-                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
-                            }
-                   },
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
-                   },
-                   new Factor()
-                   {
-                       Class = "work",
-                       SubClasses = new List<SubClass>()
-                            {
-                                new SubClass() { Name = "Prog", ImgUrl = imgUrl },
-                            }
-                    }
-                }
-            };
-            var secReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.5, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "sport",
-                       SubClasses = new List<SubClass>()
-                            {
-                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
-                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
-                            }
-                   },
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
-                   },
-                   new Factor()
-                   {
-                       Class = "work",
-                       SubClasses = new List<SubClass>()
-                            {
-                                new SubClass() { Name = "Prog", ImgUrl = imgUrl },
-                            }
-                    }
-                }
-            };
-
-            var thirdReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "sport",
-                       SubClasses = new List<SubClass>()
-                            {
-                                new SubClass() { Name = "Soccer", ImgUrl = imgUrl },
-                                new SubClass() { Name = "Basketball", ImgUrl = imgUrl },
-                            }
-                   },
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
-                   },
-                }
-            };
-
-            var fourthReq = new MatchReqDetails()
-            {
-                Location = new Location() { lat = 1.1, lng = 0.1 },
-                MatchFactors = new List<Factor>()
-               {
-                   new Factor()
-                   {
-                       Class = "gamming",
-                       SubClasses = new List<SubClass>() { new SubClass() { Name = "ps4", ImgUrl = imgUrl } }
-                   },
-                }
-            };
-
-            var first = new MatchRequest();
-            first.MatchReqDetails = firstReq;
-            first.MatchOwner = "71b9ca3f-a85e-40db-a7f3-c4c3373a46b5";
-            var sec = new MatchRequest();
-            sec.MatchReqDetails = secReq;
-            sec.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
-            var third = new MatchRequest();
-            third.MatchReqDetails = thirdReq;
-            third.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
-            var fourth = new MatchRequest();
-            fourth.MatchReqDetails = fourthReq;
-            fourth.MatchOwner = "74d64e5e-8ae2-4159-a492-a5b0bc0426a2";
-
-            await manager.CreateMatchRequest(first);
-            await manager.CreateMatchRequest(third);
-            await manager.CreateMatchRequest(sec);
-            await manager.CreateMatchRequest(fourth);
         }
     }
 }

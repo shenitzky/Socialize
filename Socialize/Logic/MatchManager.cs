@@ -82,7 +82,7 @@ namespace Socialize.Logic
         }
 
         //Accept (status = true ) or decline (status = false) optional match offer
-        public void AcceptOrDeclineOptionalMatch(int optionalMatchId, int matchReqId, bool status)
+        public async Task AcceptOrDeclineOptionalMatch(int optionalMatchId, int matchReqId, bool status)
         {
             var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
 
@@ -96,7 +96,13 @@ namespace Socialize.Logic
                 }
                 else
                 {
+                    var firstMatchReqId = optionalMatch.MatchRequestIds.First();
+                    var secMatchReqId = optionalMatch.MatchRequestIds.Last();
                     OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
+
+                    //Restore Match req
+                    await MatchReqContainer.RestoreMatchReq(firstMatchReqId);
+                    await MatchReqContainer.RestoreMatchReq(secMatchReqId);
                 }
             }
         }

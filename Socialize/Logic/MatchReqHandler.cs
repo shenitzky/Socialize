@@ -84,7 +84,7 @@ namespace Socialize.Logic
             var nextMatchReq = ReqContainerInstance.GetNextMatchRequest();
             if (nextMatchReq == null) return;
 
-            //Remove the match request in case the user didnt send updates for more then two minutes
+            //Remove the match request in case the user didn't send updates for more then two minutes
             if(SocializeUtil.IsDateDeprecated(nextMatchReq.Updated, MAX_MATCHREQ_LIFE_TIME))
             {
                 await ReqContainerInstance.RemoveMatchReq(nextMatchReq.Id);
