@@ -12,7 +12,7 @@ namespace Socialize.Logic
     public class OptionalMatchContainer
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private Dictionary<int, IOptionalMatch> OptionalMatches;
+        public Dictionary<int, IOptionalMatch> OptionalMatches { get; private set; }
 
         //singlton implementation
         private static OptionalMatchContainer OptionalContainerInstance;

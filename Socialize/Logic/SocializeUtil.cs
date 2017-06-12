@@ -176,6 +176,11 @@ namespace Socialize.Logic
                                 new SubClass() { Name = "Engineer", ImgUrl = CreateImgUrl("engineer") },
                                 new SubClass() { Name = "Programmer", ImgUrl = CreateImgUrl("programmer") }
                             }
+                        },
+                    new Factor()
+                        {
+                            Class = "Suggested by users" ,
+                            SubClasses = new List<SubClass>()
                         }
                     };
 

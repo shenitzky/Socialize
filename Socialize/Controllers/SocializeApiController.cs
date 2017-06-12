@@ -35,7 +35,7 @@ namespace Socialize.Controllers
             var userId = User.Identity.GetUserId();
 
             var userPendingMatchReqId = matchManager.GetMatchReqIdByUser(userId);
-            if(userPendingMatchReqId != -1)
+            if (userPendingMatchReqId != -1)
             {
                 var errParseObj = JsonConvert.SerializeObject(newMatchReq);
                 Log.Debug($"POST cannot create match request for user {userId}, there is pending match request on the system ");
@@ -62,7 +62,7 @@ namespace Socialize.Controllers
 
                 db.MatchRequestLog.Add(logMatchReq);
                 db.SaveChanges();
-                
+
                 await matchManager.CreateMatchRequest(matchReq);
 
                 return matchReq.Id;
@@ -83,7 +83,7 @@ namespace Socialize.Controllers
             var userId = User.Identity.GetUserId();
             var matchReqId = matchManager.GetMatchReqIdByUser(userId);
 
-            if(matchReqId == -1)
+            if (matchReqId == -1)
             {
                 return new OptinalMatchObj
                 {
@@ -91,7 +91,7 @@ namespace Socialize.Controllers
                 };
             }
             //If optional match found
-            if(optionalMatch != null)
+            if (optionalMatch != null)
             {
                 using (var db = ApplicationDbContext.Create())
                 {
@@ -108,7 +108,7 @@ namespace Socialize.Controllers
                     db.OptionalMatchLog.Add(logOptionalMatch);
                     await db.SaveChangesAsync();
                 }
-                
+
                 //Get matched user details
                 var matchedMatchReqId = optionalMatch.MatchRequestIds.Where(x => x != matchReqUpdate.matchReqId).FirstOrDefault();
                 var matchedUserDetails = matchManager.GetMatchedUserDetailsByMatchReqId(matchedMatchReqId);
@@ -203,11 +203,11 @@ namespace Socialize.Controllers
 
                 var originalFactors = user.Factors;
                 var rawOriginalSubClasses = originalFactors.Select(x => x.SubClasses.ToArray());
-                
+
                 db.Factors.RemoveRange(originalFactors);
 
                 var factorToInsert = new List<Factor>();
-                foreach(var rawFactor in updateUserData.Data)
+                foreach (var rawFactor in updateUserData.Data)
                 {
                     var factor = new Factor()
                     {
@@ -260,7 +260,7 @@ namespace Socialize.Controllers
             var manager = MatchManager.GetManagerInstance();
 
             var optionalMatch = manager.GetOptionalMatchByOwnerId(userId);
-            if(optionalMatch == null)
+            if (optionalMatch == null)
             {
                 return null;
             }
@@ -285,7 +285,7 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task UpdateUserExtraData(UserExtraData data)
         {
-            using(var db = ApplicationDbContext.Create())
+            using (var db = ApplicationDbContext.Create())
             {
                 var userId = User.Identity.GetUserId();
                 var user = db.Users.FirstOrDefault(x => x.Id == userId);
@@ -305,7 +305,7 @@ namespace Socialize.Controllers
         public async Task<Factor[]> GetAllSystemFactors()
         {
             Log.Debug($"GET GetAllSystemFactors calld");
-            using(var db = ApplicationDbContext.Create())
+            using (var db = ApplicationDbContext.Create())
             {
                 var factors = db.Factors.Include(x => x.SubClasses).Where(x => x.UserId == null).ToArray();
                 return factors;
@@ -316,7 +316,7 @@ namespace Socialize.Controllers
         [HttpGet]
         public async Task<ImagesObj[]> GetImagesForBubble()
         {
-            using(var db = ApplicationDbContext.Create())
+            using (var db = ApplicationDbContext.Create())
             {
                 var allImages = db.AvatarImgs.ToArray();
                 var images = new List<ImagesObj>();
@@ -367,6 +367,28 @@ namespace Socialize.Controllers
 
                 await db.SaveChangesAsync();
             }
+        }
+
+        //Return the data struct content for analysis
+        [HttpGet]
+        public async Task<DataStructStatusObj> GetDataStructStatus()
+        {
+            var matchReqContainer = MatchReqContainer.GetMatchReqContainerInstance();
+            var optionalMatchContainer = OptionalMatchContainer.GetOptionalMatchContainerInstance();
+
+            return new DataStructStatusObj()
+            {
+                OptionalMatches = optionalMatchContainer.OptionalMatches,
+                MatchRequests = matchReqContainer.MatchRequests
+            };
+        }
+
+        //Suggest new sub-class to the system by the user
+        [HttpGet]
+        public async Task SuggestNewSubClass(string newSubClassDesc)
+        {
+            var factorsManager = NewFactorsManager.GetInstance();
+            factorsManager.AddNewSuggestedFactor(newSubClassDesc);
         }
     }
 }

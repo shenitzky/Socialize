@@ -255,6 +255,7 @@
     <Compile Include="Logic\MatchManager.cs" />
     <Compile Include="Logic\MatchReqContainer.cs" />
     <Compile Include="Logic\MatchReqHandler.cs" />
+    <Compile Include="Logic\NewFactorsManager.cs" />
     <Compile Include="Logic\OptionalMatchBuilder.cs" />
     <Compile Include="Logic\OptionalMatchContainer.cs" />
     <Compile Include="Logic\SocializeUtil.cs" />
@@ -267,6 +268,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AvatarImg.cs" />
     <Compile Include="Models\FinalMatchLog.cs" />
+    <Compile Include="Models\GetResponseObjects\DataStructStatusObj.cs" />
     <Compile Include="Models\GetResponseObjects\ImagesObj.cs" />
     <Compile Include="Models\MatchRequestLog.cs" />
     <Compile Include="Models\OptionalMatchLog.cs" />
