@@ -48,5 +48,7 @@ namespace Socialize.Models
         public Location Location { get; set; }
 
         public int maxDistance { get; set; }
+
+        public int minMatchStrength { get; set; }
     }
 }

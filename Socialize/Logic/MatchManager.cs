@@ -13,7 +13,6 @@ namespace Socialize.Logic
 {
     public class MatchManager
     {
-
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         //singlton implementation
         private static MatchManager ManagerInstance;
@@ -93,18 +92,15 @@ namespace Socialize.Logic
                 if (status)
                 {
                     optionalMatch.Status[matchReqId] = true;
+                    return;
                 }
                 else
                 {
-                    var firstMatchReqId = optionalMatch.MatchRequestIds.First();
-                    var secMatchReqId = optionalMatch.MatchRequestIds.Last();
                     OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
-
-                    //Restore Match req
-                    await MatchReqContainer.RestoreMatchReq(firstMatchReqId);
-                    await MatchReqContainer.RestoreMatchReq(secMatchReqId);
                 }
             }
+            //Restore Match req
+            await MatchReqContainer.RestoreMatchReq(matchReqId);
         }
 
         //Get Matched User Details By Match Req Id for optional match
@@ -252,7 +248,20 @@ namespace Socialize.Logic
 
                 return finalMatch;
             }
+        }
 
+        public async Task CleanUserPreviousLeftovers(string userId)
+        {
+            var matchReqId = GetMatchReqIdByUser(userId);
+
+            if (matchReqId != -1)
+            {
+                var optionalMatch = OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId);
+                if(optionalMatch != null)
+                    OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatch.Id);
+
+                await RemoveMatchRequest(matchReqId);
+            }
         }
     }
 }

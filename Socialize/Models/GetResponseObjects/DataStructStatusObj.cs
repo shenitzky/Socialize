@@ -9,5 +9,9 @@ namespace Socialize.Models.GetResponseObjects
     {
         public Dictionary<int, IOptionalMatch> OptionalMatches { get; set; }
         public Dictionary<int, MatchRequest> MatchRequests { get; set; }
+
+        public int[] Q { get; set; }
+
+
     }
 }

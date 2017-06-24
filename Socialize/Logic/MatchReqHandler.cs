@@ -24,13 +24,14 @@ namespace Socialize.Logic
     public class MatchReqHandler
     {
         public delegate Task EventHandler(object e, OptionalMatchEventArgs args);
+
         //Delegete function which the matchManager subscribed to
         public event EventHandler OptionalMatchFound;
 
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         //define the minimum value of match strength, below this -> no optional match
-        private double MIN_MATCH_STRENGTH => 50;
+        //private double MIN_MATCH_STRENGTH => 50;
         //define the maximum value of match request life time, above this -> match request removed
         private int MAX_MATCHREQ_LIFE_TIME => 60000;
         //singlton implementation
@@ -100,6 +101,8 @@ namespace Socialize.Logic
                 return;
             }
 
+            
+
             //Verify match request is not suspended
             if (!nextMatchReq.WaitForOptionalMatchRes)
             {
@@ -110,8 +113,11 @@ namespace Socialize.Logic
                     {
                         var algResult = MatchAlg.CalcOptionalMatch(nextMatchReq, matchReq);
 
+                        //Extract the min match strength value, below this --> no match
+                        var minRequestedStrength = algResult.Min(x => x.Value);
+
                         //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
-                        if (!(algResult.Any(x => x.Value < MIN_MATCH_STRENGTH)))
+                        if (!(algResult.Any(x => x.Value < minRequestedStrength)))
                         {
                             OnOptionalMatchFound(algResult);
                             return;

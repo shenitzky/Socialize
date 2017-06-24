@@ -28,7 +28,8 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
-            if (newMatchReq.MatchFactors == null || newMatchReq.MatchFactors.Count == 0)
+            //newMatchReq.minMatchStrength = newMatchReq.maxDistance;
+            if (newMatchReq.MatchFactors == null || newMatchReq.MatchFactors.Count == 0 || newMatchReq.minMatchStrength <= 0 || newMatchReq.minMatchStrength > 100)
                 return -1;
 
             var matchManager = MatchManager.GetManagerInstance();
@@ -379,7 +380,8 @@ namespace Socialize.Controllers
             return new DataStructStatusObj()
             {
                 OptionalMatches = optionalMatchContainer.OptionalMatches,
-                MatchRequests = matchReqContainer.MatchRequests
+                MatchRequests = matchReqContainer.MatchRequests,
+                Q = matchReqContainer.RequestsQ.ToArray()
             };
         }
 

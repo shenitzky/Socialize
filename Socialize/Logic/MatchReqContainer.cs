@@ -18,7 +18,7 @@ namespace Socialize.Logic
         private static MatchReqContainer ReqContainerInstance;
 
         public Dictionary<int, MatchRequest> MatchRequests { get; private set; }
-        private Queue<int> RequestsQ;
+        public Queue<int> RequestsQ { get; private set; }
 
 
         public static MatchReqContainer GetMatchReqContainerInstance()

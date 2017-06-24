@@ -80,6 +80,11 @@ namespace Socialize.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    //In case the user left the system in the middle of match step clean any leftover
+                    var userId = User.Identity.GetUserId();
+                    var manager = MatchManager.GetManagerInstance();
+                    await manager.CleanUserPreviousLeftovers(userId);
+
                     return Json(new { RedirectUrl = returnUrl });
                 case SignInStatus.LockedOut:
                     throw new NotImplementedException("Lockout");
