@@ -25,6 +25,8 @@ namespace Socialize.Models
         public MatchReqDetails MatchReqDetails { get; set; }
         // True if found optional match - Match request suspended, False otherwise
         public bool WaitForOptionalMatchRes { get; set; }
+        //Ignore list - all the declined match requests saves to prevent rematch
+        public List<int> IgnoreList { get; set; }
 
         public MatchRequest()
         {
@@ -32,6 +34,7 @@ namespace Socialize.Models
             this.WaitForOptionalMatchRes = false;
             this.Created = DateTime.Now;
             this.Updated = DateTime.Now;
+            this.IgnoreList = new List<int>();
 
             //default one on one match request - BETA
             this.MatchType = MatchType.ONE_TO_ONE;

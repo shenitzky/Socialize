@@ -28,7 +28,6 @@ namespace Socialize.Controllers
         [HttpPost]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
-            //newMatchReq.minMatchStrength = newMatchReq.maxDistance;
             if (newMatchReq.MatchFactors == null || newMatchReq.MatchFactors.Count == 0 || newMatchReq.minMatchStrength <= 0 || newMatchReq.minMatchStrength > 100)
                 return -1;
 
@@ -391,6 +390,14 @@ namespace Socialize.Controllers
         {
             var factorsManager = NewFactorsManager.GetInstance();
             factorsManager.AddNewSuggestedFactor(newSubClassDesc);
+        }
+
+        //Reduce Suggest new sub-class counting
+        [HttpGet]
+        public async Task ReduceSuggestNewSubClass(string newSubClassDesc)
+        {
+            var factorsManager = NewFactorsManager.GetInstance();
+            factorsManager.ReduceNewSuggestedFactor(newSubClassDesc);
         }
     }
 }

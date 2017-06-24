@@ -317,6 +317,7 @@
     <Content Include="Content\Images\Icons\age.svg" />
     <Content Include="Content\Images\Icons\description.svg" />
     <Content Include="Content\Images\Icons\face.svg" />
+    <Content Include="Content\Images\Icons\garbage.svg" />
     <Content Include="Content\Images\Icons\history.svg" />
     <Content Include="Content\Images\Icons\lastName.svg" />
     <Content Include="Content\Images\Icons\logo.png" />

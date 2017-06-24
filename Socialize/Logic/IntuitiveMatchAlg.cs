@@ -20,12 +20,20 @@ namespace Socialize.Logic
             var firstTotalSubClassesNum = 0;
             var secTotalSubClassesNum = 0;
 
+            //Check if sec match request found on the ignore list of the first match request
+            if (first.IgnoreList.Contains(sec.Id) || sec.IgnoreList.Contains(first.Id))
+            {
+                //return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
+                return null;
+            }
+
             //Check proximity between the two requests
             var distance = SocializeUtil.CalculateLocationPriximity(first.MatchReqDetails.Location, sec.MatchReqDetails.Location);
 
             if(distance > first.MatchReqDetails.maxDistance || distance > sec.MatchReqDetails.maxDistance)
             {
-                return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
+                //return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
+                return null;
             }
 
             var firstFactors = first.MatchReqDetails.MatchFactors;

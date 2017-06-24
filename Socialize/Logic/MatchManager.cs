@@ -96,7 +96,16 @@ namespace Socialize.Logic
                 }
                 else
                 {
+                    var firstMatchReqId = optionalMatch.MatchRequestIds.First();
+                    var secMatchReqId = optionalMatch.MatchRequestIds.Last();
+
+                    //Add the match requests IDs to the ignore lists to prevent rematch
+                    MatchReqContainer.GetMatchReqById(firstMatchReqId).IgnoreList.Add(secMatchReqId);
+                    MatchReqContainer.GetMatchReqById(secMatchReqId).IgnoreList.Add(firstMatchReqId);
+
+                    //remove the declined optional match
                     OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatchId);
+                    
                 }
             }
             //Restore Match req

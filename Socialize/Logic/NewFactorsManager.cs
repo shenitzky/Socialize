@@ -54,6 +54,19 @@ namespace Socialize.Logic
             }
         }
 
+        //Add new suggested sub-class, in case sub-class already exists, inc suggestion number and add to DB if above MAX_VOTES_TO_ADD_TO_DB
+        public void ReduceNewSuggestedFactor(string newSubClass)
+        {
+            if (!SuggestedFactors.ContainsKey(newSubClass))
+            {
+                return;
+            }
+            else if (SuggestedFactors[newSubClass] > 0)
+            {
+                SuggestedFactors[newSubClass] = SuggestedFactors[newSubClass] - 1;
+            }
+        }
+
         private void AddSuggestedSubClassToSystemFactors(string newSubClass)
         {
             using (var db = ApplicationDbContext.Create())
