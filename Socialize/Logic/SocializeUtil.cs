@@ -121,8 +121,8 @@ namespace Socialize.Logic
 
         private static string CreateImgUrl(string name)
         {
-            //var domain = "http://socialize20170520113532.azurewebsites.net";
-            var domain = "http://localhost:50825";
+            var domain = "http://socialize20170624031639.azurewebsites.net";
+            //var domain = "http://localhost:50825";
             var imgUrl = $"{domain}/Content/Images/Factors/{name}.png";
 
             return imgUrl;
