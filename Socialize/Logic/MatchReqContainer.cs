@@ -20,7 +20,11 @@ namespace Socialize.Logic
         public Dictionary<int, MatchRequest> MatchRequests { get; private set; }
         public Queue<int> RequestsQ { get; private set; }
 
-
+        private MatchReqContainer()
+        {
+            MatchRequests = new Dictionary<int, MatchRequest>();
+            RequestsQ = new Queue<int>();
+        }
         public static MatchReqContainer GetMatchReqContainerInstance()
         {
             if (ReqContainerInstance == null)
@@ -28,12 +32,6 @@ namespace Socialize.Logic
                 ReqContainerInstance = new MatchReqContainer();
             }
             return ReqContainerInstance;
-        }
-
-        private MatchReqContainer()
-        {
-            MatchRequests = new Dictionary<int, MatchRequest>();
-            RequestsQ = new Queue<int>();
         }
 
         // Add new match request to the dictionary and the q

@@ -97,13 +97,24 @@ namespace Socialize.Logic
             return new List<Location>() { firstLocObj, secLocObj };
         }
 
-        public static string RandomAvatarImg()
+        public static string RandomAvatarImg(string email)
         {
             using(var db = ApplicationDbContext.Create())
             {
                 var allImages = db.AvatarImgs.ToList();
-
-                var randomNum = new Random().Next(0, allImages.Count);
+                if (email.Contains("yossi"))
+                {
+                    return allImages[9].ImgUrl;
+                }
+                else if (email.Contains("ron"))
+                {
+                    return allImages[8].ImgUrl;
+                }
+                else if (email.Contains("eyal"))
+                {
+                    return allImages[7].ImgUrl;
+                }
+                var randomNum = new Random().Next(0, 7);
                 var img = allImages[randomNum];
 
                 return img.ImgUrl;

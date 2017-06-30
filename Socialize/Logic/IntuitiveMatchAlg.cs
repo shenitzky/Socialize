@@ -23,7 +23,6 @@ namespace Socialize.Logic
             //Check if sec match request found on the ignore list of the first match request
             if (first.IgnoreList.Contains(sec.Id) || sec.IgnoreList.Contains(first.Id))
             {
-                //return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
                 return null;
             }
 
@@ -32,7 +31,6 @@ namespace Socialize.Logic
 
             if(distance > first.MatchReqDetails.maxDistance || distance > sec.MatchReqDetails.maxDistance)
             {
-                //return new Dictionary<int, int>() { { first.Id, 0 }, { sec.Id, 0 } };
                 return null;
             }
 

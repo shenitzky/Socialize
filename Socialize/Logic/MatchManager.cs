@@ -46,7 +46,6 @@ namespace Socialize.Logic
             await MatchReqContainer.AddNewMatchReq(matchReq);
         }
 
-
         //update match request location by id in the container
         public async Task UpdateMatchRequest(int matchReqId, Location newLocation)
         {
@@ -169,13 +168,15 @@ namespace Socialize.Logic
         }
 
         //Check if optional match accepted by all sides or if timeout occured
-        public FinalMatch CheckOptionalMatchStatus(int optionalMatchId)
+        public async Task<FinalMatch> CheckOptionalMatchStatus(int optionalMatchId, int matchReqId)
         {
             var optionalMatch = OptionalMatchContainer.GetOptionalMatchByOptionalMatchId(optionalMatchId);
+
 
             //Check if one of the sides decline the optional match
             if(optionalMatch == null)
             {
+                await MatchReqContainer.RestoreMatchReq(matchReqId);
                 return BuildDeclinedFinalMatch();
             }
             //Check if still waiting for one of the sides to respond
@@ -210,6 +211,25 @@ namespace Socialize.Logic
         public int GetMatchReqIdByUser(string userId)
         {
             return MatchReqContainer.GetMatchReqIdByOwner(userId);
+        }
+
+        public async Task CleanUserPreviousLeftovers(string userId)
+        {
+            var matchReqId = GetMatchReqIdByUser(userId);
+
+            if (matchReqId != -1)
+            {
+                var optionalMatch = OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId);
+                if(optionalMatch != null)
+                    OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatch.Id);
+
+                await RemoveMatchRequest(matchReqId);
+            }
+        }
+
+        public async Task RestoreMatchReq(int matchReqId)
+        {
+            await MatchReqContainer.RestoreMatchReq(matchReqId);
         }
 
         private FinalMatch BuildDeclinedFinalMatch()
@@ -256,20 +276,6 @@ namespace Socialize.Logic
                 db.SaveChanges();
 
                 return finalMatch;
-            }
-        }
-
-        public async Task CleanUserPreviousLeftovers(string userId)
-        {
-            var matchReqId = GetMatchReqIdByUser(userId);
-
-            if (matchReqId != -1)
-            {
-                var optionalMatch = OptionalMatchContainer.GetOptionalMatchByMatchRequestId(matchReqId);
-                if(optionalMatch != null)
-                    OptionalMatchContainer.RemoveOptionalMatchByOptionalMatchId(optionalMatch.Id);
-
-                await RemoveMatchRequest(matchReqId);
             }
         }
     }

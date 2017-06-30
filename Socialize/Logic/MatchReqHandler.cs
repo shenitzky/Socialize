@@ -116,7 +116,7 @@ namespace Socialize.Logic
                         if (algResult != null)
                         {
                             //Extract the min match strength value, below this --> no match
-                            var minRequestedStrength = algResult.Min(x => x.Value);
+                            var minRequestedStrength = Math.Max(nextMatchReq.MatchReqDetails.minMatchStrength, matchReq.MatchReqDetails.minMatchStrength);
 
                             //If one of the match strength below MIN_MATCH_STRENGTH -> no optional match
                             if (!(algResult.Any(x => x.Value < minRequestedStrength)))

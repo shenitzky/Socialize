@@ -185,7 +185,7 @@ namespace Socialize.Controllers
 
                     return Json(new { Error = errorString });
                 }
-                var imgUrl = SocializeUtil.RandomAvatarImg();
+                var imgUrl = SocializeUtil.RandomAvatarImg(model.Email);
                 var user = new ApplicationUser { Email = model.Email, UserName = model.Email, ImgUrl = imgUrl };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)

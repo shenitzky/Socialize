@@ -26,6 +26,7 @@ namespace Socialize.Controllers
 
         //Create new match request by id
         [HttpPost]
+        [Authorize]
         public async Task<int> CreateMatcReq(MatchReqDetails newMatchReq)
         {
             if (newMatchReq.MatchFactors == null || newMatchReq.MatchFactors.Count == 0 || newMatchReq.minMatchStrength <= 0 || newMatchReq.minMatchStrength > 100)
@@ -71,6 +72,7 @@ namespace Socialize.Controllers
 
         //Check if found optional match for match request by id (loop) if not Update specific match request by id with new location 
         [HttpPost]
+        [Authorize]
         public async Task<OptinalMatchObj> UpdateAndCheckMatcReq(MatchReqUpdateObj matchReqUpdate)
         {
             var parseObj = JsonConvert.SerializeObject(matchReqUpdate);
@@ -128,6 +130,7 @@ namespace Socialize.Controllers
 
         //Confirm optional match suggestion
         [HttpPost]
+        [Authorize]
         public async Task AcceptOptionalMatch(OptionalMatchIdAndMatchReqIdObj ids)
         {
             var parseObj = JsonConvert.SerializeObject(ids);
@@ -139,6 +142,7 @@ namespace Socialize.Controllers
 
         //Decline optional match suggestion
         [HttpPost]
+        [Authorize]
         public async Task DeclineOptionalMatch(OptionalMatchIdAndMatchReqIdObj ids)
         {
             var parseObj = JsonConvert.SerializeObject(ids);
@@ -150,9 +154,10 @@ namespace Socialize.Controllers
 
         //Check optional match status - if confirmed by all other participants (loop)
         [HttpGet]
+        [Authorize]
         public async Task<FinalMatchObj> CheckOptionalMatchStatus(int optionalMatchId, int matchReqId)
         {
-            Log.Debug($"GET CheckOptionalMatchStatus calld with id {optionalMatchId}");
+            Log.Debug($"GET CheckOptionalMatchStatus calld with optional match id: {optionalMatchId}, match req id: {matchReqId}");
 
             var manager = MatchManager.GetManagerInstance();
 
@@ -161,13 +166,16 @@ namespace Socialize.Controllers
             {
                 await manager.RemoveMatchRequestsByOptionalMatchId(optionalMatchId);
                 manager.RemoveOptionalMatchById(optionalMatchId);
+
+                await manager.RestoreMatchReq(matchReqId);
                 return new FinalMatchObj()
                 {
                     IsAccepted = false,
                 };
             }
 
-            var finalMatch = manager.CheckOptionalMatchStatus(optionalMatchId);
+            var finalMatch = await manager.CheckOptionalMatchStatus(optionalMatchId, matchReqId);
+
 
             if (finalMatch != null)
             {
@@ -191,6 +199,7 @@ namespace Socialize.Controllers
 
         //Update user detail by user id
         [HttpPost]
+        [Authorize]
         public async Task UpdateUserData(UpdateUserObj updateUserData)
         {
             var parseObj = JsonConvert.SerializeObject(updateUserData);
@@ -226,6 +235,7 @@ namespace Socialize.Controllers
 
         //Get user detail by user id
         [HttpGet]
+        [Authorize]
         public async Task<UserDataObj> GetUserData()
         {
             Log.Debug($"GET GetUserData calld");
@@ -254,6 +264,7 @@ namespace Socialize.Controllers
 
         //Get user pending optional match
         [HttpGet]
+        [Authorize]
         public async Task<OptinalMatchObj> GetUserOptionalMatch()
         {
             var userId = User.Identity.GetUserId();
@@ -275,6 +286,7 @@ namespace Socialize.Controllers
 
         //Get conected user img url
         [HttpGet]
+        [Authorize]
         public async Task<string> GetUserImgUrl()
         {
             var userId = User.Identity.GetUserId();
@@ -283,6 +295,7 @@ namespace Socialize.Controllers
 
         //Set user informations
         [HttpPost]
+        [Authorize]
         public async Task UpdateUserExtraData(UserExtraData data)
         {
             using (var db = ApplicationDbContext.Create())
@@ -302,6 +315,7 @@ namespace Socialize.Controllers
 
         //Get all the available factors for user registration
         [HttpGet]
+        [Authorize]
         public async Task<Factor[]> GetAllSystemFactors()
         {
             Log.Debug($"GET GetAllSystemFactors calld");
@@ -314,6 +328,7 @@ namespace Socialize.Controllers
 
         //Get pair of images for effect on the client gui
         [HttpGet]
+        [Authorize]
         public async Task<ImagesObj[]> GetImagesForBubble()
         {
             using (var db = ApplicationDbContext.Create())
@@ -321,7 +336,7 @@ namespace Socialize.Controllers
                 var allImages = db.AvatarImgs.ToArray();
                 var images = new List<ImagesObj>();
 
-                var length = allImages.Length % 2 == 0 ? allImages.Length : allImages.Length - 1;
+                var length = allImages.Length % 2 == 0 ? allImages.Length - 1 : allImages.Length - 1;
                 for (var i = 0; i < length; i++)
                 {
                     images.Add(new ImagesObj(allImages[i].ImgUrl, allImages[i + 1].ImgUrl));
@@ -331,19 +346,31 @@ namespace Socialize.Controllers
             }
         }
 
-        //Add all possible factors to the DB
-        [HttpGet]
-        public async Task AddFactorToDb()
-        {
-            SocializeUtil.CreateFactors();
-        }
-
         //Log out 
         [HttpGet]
+        [Authorize]
         public void Logoff()
         {
             var AutheticationManager = HttpContext.Current.GetOwinContext().Authentication;
             AutheticationManager.SignOut();
+        }
+
+        //Suggest new sub-class to the system by the user
+        [HttpGet]
+        [Authorize]
+        public async Task SuggestNewSubClass(string newSubClassDesc)
+        {
+            var factorsManager = NewFactorsManager.GetInstance();
+            factorsManager.AddNewSuggestedFactor(newSubClassDesc);
+        }
+
+        //Reduce Suggest new sub-class counting
+        [HttpGet]
+        [Authorize]
+        public async Task ReduceSuggestNewSubClass(string newSubClassDesc)
+        {
+            var factorsManager = NewFactorsManager.GetInstance();
+            factorsManager.ReduceNewSuggestedFactor(newSubClassDesc);
         }
 
         //Add user images to DB
@@ -359,7 +386,7 @@ namespace Socialize.Controllers
                 var domain = HttpContext.Current.Request.Url.Authority;
                 var imgUrl = $"http://{domain}/Content/Images/Profiles/profile";
 
-                for (var i = 1; i <= 7; i++)
+                for (var i = 1; i <= 10; i++)
                 {
                     var imageToiInsert = new AvatarImg() { ImgUrl = imgUrl + i + ".png" };
                     db.AvatarImgs.Add(imageToiInsert);
@@ -384,20 +411,11 @@ namespace Socialize.Controllers
             };
         }
 
-        //Suggest new sub-class to the system by the user
+        //Add all possible factors to the DB
         [HttpGet]
-        public async Task SuggestNewSubClass(string newSubClassDesc)
+        public async Task AddFactorToDb()
         {
-            var factorsManager = NewFactorsManager.GetInstance();
-            factorsManager.AddNewSuggestedFactor(newSubClassDesc);
-        }
-
-        //Reduce Suggest new sub-class counting
-        [HttpGet]
-        public async Task ReduceSuggestNewSubClass(string newSubClassDesc)
-        {
-            var factorsManager = NewFactorsManager.GetInstance();
-            factorsManager.ReduceNewSuggestedFactor(newSubClassDesc);
+            SocializeUtil.CreateFactors();
         }
     }
 }
